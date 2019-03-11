@@ -69,7 +69,7 @@ namespace PhysicsEngine
 		
 	public:
 
-		float speed = 50.0f;
+		float maxSpeed = 19.0f;
 
 		bool forward = false, back = false, left = false, right = false;
 
@@ -109,18 +109,18 @@ namespace PhysicsEngine
 		{
 
 			// Limit Player Speed (Check Magnitude)
-			if (((PxRigidBody*)this->Get())->getLinearVelocity().normalize() > speed)
-				((PxRigidBody*)this->Get())->setLinearVelocity(((PxRigidBody*)this->Get())->getLinearVelocity().getNormalized() * 49.0f);
+			if (((PxRigidBody*)this->Get())->getLinearVelocity().normalize() > maxSpeed)
+				((PxRigidBody*)this->Get())->setLinearVelocity(((PxRigidBody*)this->Get())->getLinearVelocity().getNormalized() * maxSpeed);
 
 			if(forward)
-				((PxRigidBody*)this->Get())->addForce(PxVec3(0.0f, 0.0f, -1.0f) * speed, PxForceMode::eIMPULSE);
+				((PxRigidBody*)this->Get())->addForce(PxVec3(0.0f, 0.0f, -1.0f) * maxSpeed, PxForceMode::eIMPULSE);
 			else if(back)
-				((PxRigidBody*)this->Get())->addForce(PxVec3(0.0f, 0.0f, 1.0f) * speed, PxForceMode::eIMPULSE);
+				((PxRigidBody*)this->Get())->addForce(PxVec3(0.0f, 0.0f, 1.0f) * maxSpeed, PxForceMode::eIMPULSE);
 
 			if(left)
-				((PxRigidBody*)this->Get())->addForce(PxVec3(-1.0f, 0.0f, 0.0f) * speed, PxForceMode::eIMPULSE);
+				((PxRigidBody*)this->Get())->addForce(PxVec3(-1.0f, 0.0f, 0.0f) * maxSpeed, PxForceMode::eIMPULSE);
 			else if (right)
-				((PxRigidBody*)this->Get())->addForce(PxVec3(1.0f, 0.0f, 0.0f) * speed, PxForceMode::eIMPULSE);
+				((PxRigidBody*)this->Get())->addForce(PxVec3(1.0f, 0.0f, 0.0f) * maxSpeed, PxForceMode::eIMPULSE);
 
 		}
 
@@ -145,7 +145,8 @@ namespace PhysicsEngine
 			: DynamicActor(pose)
 		{
 			CreateShape(PxBoxGeometry(dimensions), density);
-			this->Name("Enemy");
+			this->Name("Default Enemy");
+			///printf("* Default Enemy Created, base properies in use! *\n");
 		}
 
 		virtual void Init()
@@ -161,7 +162,7 @@ namespace PhysicsEngine
 
 		virtual void Movement()
 		{
-			printf("Default Movement method called \n");
+			///printf("Default Movement method called \n");
 		}
 
 		// Limit Speed
@@ -181,7 +182,7 @@ namespace PhysicsEngine
 				return;
 			}
 
-			printf("Target changed to %s \n", target->getName());
+			printf("%s's target changed to %s \n", this->Get()->getName(), target->getName());
 		}
 
 	};
@@ -191,13 +192,13 @@ namespace PhysicsEngine
 	{
 	public:
 
-		float maxSpeed = 10.0f;
-
-		Chaser(const PxTransform& pose = PxTransform(PxIdentity), PxVec3 dimensions = PxVec3(0.5f, 0.5f, 0.5f), PxReal density = PxReal(1.0f))
+		Chaser(const PxTransform& pose = PxTransform(PxIdentity), PxVec3 dimensions = PxVec3(0.5f, 0.5f, 0.5f), PxReal density = PxReal(2.0f))
 			: Enemy(pose)
 		{
 			CreateShape(PxBoxGeometry(dimensions), density);
 			this->Name("Chaser");
+
+			maxSpeed = 20.0f;
 		}
 	
 		void Init()
@@ -210,7 +211,7 @@ namespace PhysicsEngine
 		void Movement()
 		{
 
-			printf("Chaser Movement called!\n");
+			///printf("Chaser Movement called!\n");
 
 			if (targetToChase == NULL)
 				return;
@@ -229,13 +230,13 @@ namespace PhysicsEngine
 	{
 	public:
 
-		float maxSpeed = 2.0f;
-
 		Heavy(const PxTransform& pose = PxTransform(PxIdentity), PxVec3 dimensions = PxVec3(0.5f, 0.5f, 0.5f), PxReal density = PxReal(2.0f))
 			: Enemy(pose)
 		{
 			CreateShape(PxBoxGeometry(dimensions), density);
 			this->Name("Heavy");
+
+			maxSpeed = 10.0f;
 		}
 
 		void Init(PxVec3 color = PxVec3(61.0f / 255.0f, 61.0f / 255.0f, 61.0f / 255.0f))
@@ -245,7 +246,7 @@ namespace PhysicsEngine
 
 		void Movement()
 		{
-			printf("Heavy Movement called!\n");
+			///printf("Heavy Movement called!\n");
 		}
 
 

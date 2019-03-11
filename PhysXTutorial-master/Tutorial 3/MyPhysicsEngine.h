@@ -286,6 +286,7 @@ namespace PhysicsEngine
 		{
 			// Object Updates
 			player->Update();
+
 			heavyEnemy->Update();
 			chaserEnemy->Update();
 
