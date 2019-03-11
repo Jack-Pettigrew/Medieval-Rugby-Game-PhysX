@@ -1,0 +1,134 @@
+﻿'Tutorial 2.exe' (Win32): Loaded 'C:\Users\Student\Desktop\PhysXTutorial-master\x64\Debug\Tutorial 2.exe'. Symbols loaded.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\ntdll.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\kernel32.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\KernelBase.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Program Files (x86)\NVIDIA Corporation\PhysX\NVIDIA PhysX SDK\3.3.4\Bin\vc14win64\PhysX3CommonDEBUG_x64.dll'. Symbols loaded.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\ws2_32.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\rpcrt4.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\advapi32.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\msvcrt.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\sechost.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Program Files (x86)\NVIDIA Corporation\PhysX\NVIDIA PhysX SDK\3.3.4\Bin\vc14win64\PhysX3DEBUG_x64.dll'. Symbols loaded.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Program Files (x86)\NVIDIA Corporation\PhysX\NVIDIA PhysX SDK\3.3.4\Bin\vc14win64\PhysX3CookingDEBUG_x64.dll'. Symbols loaded.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Program Files\Haskell Platform\8.0.2-a\bin\glut32.dll'. Module was built without symbols.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\gdi32.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\gdi32full.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\msvcp_win.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\ucrtbase.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\glu32.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\user32.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\win32u.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\opengl32.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\winmm.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\cryptbase.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\bcryptprimitives.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\winmmbase.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\cfgmgr32.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Program Files (x86)\NVIDIA Corporation\PhysX\NVIDIA PhysX SDK\3.3.4\Bin\vc14win64\nvToolsExt64_1.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\imm32.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\NapiNSP.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\pnrpnsp.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\nlaapi.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\mswsock.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\dnsapi.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\nsi.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\IPHLPAPI.DLL'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\winrnr.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\FWPUCLNT.DLL'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\bcrypt.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\rasadhlp.dll'. Cannot find or open the PDB file.
+The thread 0xc54 has exited with code 0 (0x0).
+'Tutorial 2.exe' (Win32): Unloaded 'C:\Windows\System32\NapiNSP.dll'
+'Tutorial 2.exe' (Win32): Unloaded 'C:\Windows\System32\pnrpnsp.dll'
+'Tutorial 2.exe' (Win32): Unloaded 'C:\Windows\System32\nlaapi.dll'
+'Tutorial 2.exe' (Win32): Unloaded 'C:\Windows\System32\winrnr.dll'
+'Tutorial 2.exe' (Win32): Unloaded 'C:\Windows\System32\FWPUCLNT.DLL'
+..\..\PhysX\src\NpShape.cpp (438) : info : NpShape::resetFiltering: This method has been deprecated!
+
+..\..\PhysX\src\NpShape.cpp (438) : info : NpShape::resetFiltering: This method has been deprecated!
+
+..\..\PhysX\src\NpShape.cpp (438) : info : NpShape::resetFiltering: This method has been deprecated!
+
+..\..\PhysX\src\NpShape.cpp (438) : info : NpShape::resetFiltering: This method has been deprecated!
+
+..\..\PhysX\src\NpShape.cpp (438) : info : NpShape::resetFiltering: This method has been deprecated!
+
+..\..\PhysX\src\NpShape.cpp (438) : info : NpShape::resetFiltering: This method has been deprecated!
+
+..\..\PhysX\src\NpShape.cpp (438) : info : NpShape::resetFiltering: This method has been deprecated!
+
+..\..\PhysX\src\NpShape.cpp (438) : info : NpShape::resetFiltering: This method has been deprecated!
+
+..\..\PhysX\src\NpShape.cpp (438) : info : NpShape::resetFiltering: This method has been deprecated!
+
+..\..\PhysX\src\NpShape.cpp (438) : info : NpShape::resetFiltering: This method has been deprecated!
+
+..\..\PhysX\src\NpShape.cpp (438) : info : NpShape::resetFiltering: This method has been deprecated!
+
+..\..\PhysX\src\NpShape.cpp (438) : info : NpShape::resetFiltering: This method has been deprecated!
+
+..\..\PhysX\src\NpShape.cpp (438) : info : NpShape::resetFiltering: This method has been deprecated!
+
+..\..\PhysX\src\NpShape.cpp (438) : info : NpShape::resetFiltering: This method has been deprecated!
+
+..\..\PhysX\src\NpShape.cpp (438) : info : NpShape::resetFiltering: This method has been deprecated!
+
+..\..\PhysX\src\NpShape.cpp (438) : info : NpShape::resetFiltering: This method has been deprecated!
+
+..\..\PhysX\src\NpShape.cpp (438) : info : NpShape::resetFiltering: This method has been deprecated!
+
+..\..\PhysX\src\NpShape.cpp (438) : info : NpShape::resetFiltering: This method has been deprecated!
+
+..\..\PhysX\src\NpShape.cpp (438) : info : NpShape::resetFiltering: This method has been deprecated!
+
+..\..\PhysX\src\NpShape.cpp (438) : info : NpShape::resetFiltering: This method has been deprecated!
+
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\uxtheme.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\combase.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\msctf.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\oleaut32.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\dwmapi.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_f5be1f8d25335236\nvoglv64.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Unloaded 'C:\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_f5be1f8d25335236\nvoglv64.dll'
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_f5be1f8d25335236\nvoglv64.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\shell32.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\SHCore.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\windows.storage.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\shlwapi.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\kernel.appcore.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\profapi.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\powrprof.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\fltLib.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\setupapi.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\ole32.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\wtsapi32.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\version.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\devobj.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\wintrust.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\msasn1.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\crypt32.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\ntmarta.dll'. Cannot find or open the PDB file.
+The thread 0x2a0c has exited with code 0 (0x0).
+The thread 0x1fcc has exited with code 0 (0x0).
+The thread 0x2b48 has exited with code 0 (0x0).
+The thread 0x50c has exited with code 0 (0x0).
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\TextInputFramework.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\CoreUIComponents.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\CoreMessaging.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\WinTypes.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\WinTypes.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\WinTypes.dll'. Cannot find or open the PDB file.
+'Tutorial 2.exe' (Win32): Unloaded 'C:\Windows\System32\WinTypes.dll'
+'Tutorial 2.exe' (Win32): Unloaded 'C:\Windows\System32\WinTypes.dll'
+'Tutorial 2.exe' (Win32): Loaded 'C:\Windows\System32\winsta.dll'. Cannot find or open the PDB file.
+The thread 0x2c18 has exited with code 0 (0x0).
+The thread 0x1e24 has exited with code 0 (0x0).
+The thread 0x5c4 has exited with code 0 (0x0).
+The thread 0x2c78 has exited with code 0 (0x0).
+The thread 0x1be0 has exited with code 0 (0x0).
+The thread 0x1830 has exited with code 0 (0x0).
+The thread 0x1d40 has exited with code 0 (0x0).
+The thread 0xa8c has exited with code 0 (0x0).
+The thread 0x27f4 has exited with code 0 (0x0).
+The thread 0x14b8 has exited with code 0 (0x0).
+The program '[3012] Tutorial 2.exe' has exited with code 0 (0x0).
