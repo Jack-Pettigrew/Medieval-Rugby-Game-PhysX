@@ -61,9 +61,11 @@ namespace PhysicsEngine
 		}
 	};
 
+	// Player Class
 	class Player : public DynamicActor
 	{
 	private:
+		
 		
 	public:
 
@@ -189,6 +191,8 @@ namespace PhysicsEngine
 	{
 	public:
 
+		float maxSpeed = 10.0f;
+
 		Chaser(const PxTransform& pose = PxTransform(PxIdentity), PxVec3 dimensions = PxVec3(0.5f, 0.5f, 0.5f), PxReal density = PxReal(1.0f))
 			: Enemy(pose)
 		{
@@ -224,6 +228,8 @@ namespace PhysicsEngine
 	class Heavy : public Enemy
 	{
 	public:
+
+		float maxSpeed = 2.0f;
 
 		Heavy(const PxTransform& pose = PxTransform(PxIdentity), PxVec3 dimensions = PxVec3(0.5f, 0.5f, 0.5f), PxReal density = PxReal(2.0f))
 			: Enemy(pose)

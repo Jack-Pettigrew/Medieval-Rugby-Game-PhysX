@@ -295,13 +295,13 @@ namespace PhysicsEngine
 			PxVec3 b = chaserEnemy->targetToChase->getGlobalPose().p;
 			PxVec3 direction = (b - a);
 
-			((PxRigidBody*)chaserEnemy->Get())->addForce(direction * 5.0f);
+			((PxRigidBody*)chaserEnemy->Get())->addForce(direction * chaserEnemy->maxSpeed);
 
 			PxVec3 c = ((PxRigidActor*)heavyEnemy->Get())->getGlobalPose().p;
 			PxVec3 d = chaserEnemy->targetToChase->getGlobalPose().p;
 			PxVec3 direction2 = (d - c);
 
-			((PxRigidBody*)heavyEnemy->Get())->addForce(direction2 * 5.0f);
+			((PxRigidBody*)heavyEnemy->Get())->addForce(direction2 * heavyEnemy->maxSpeed);
 			// =======================================
 
 			// Kick Test Code
