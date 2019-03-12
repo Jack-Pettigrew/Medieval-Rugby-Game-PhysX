@@ -70,10 +70,12 @@ namespace PhysicsEngine
 	public:
 
 		float maxSpeed = 19.0f;
+		float speed = 50.0f;
 
 		bool forward = false, back = false, left = false, right = false;
+		bool done = false;
 
-		Player(const PxTransform& pose = PxTransform(PxIdentity), PxVec2 dimensions = PxVec2(2.0f, 2.0f), PxReal density = 2.0f)
+		Player(const PxTransform& pose = PxTransform(PxIdentity), PxVec3 dimensions = PxVec3(1.0f, 2.0f, 1.0f), PxReal density = 2.0f)
 			: DynamicActor(pose)
 		{
 
@@ -81,30 +83,38 @@ namespace PhysicsEngine
 
 		}
 
-		void Create(PxVec2 capsuleDimensions, PxReal capsuleDensity)
+		// Creates Player Shape
+		void Create(PxVec3 dimensions, PxReal density)
 		{
-			// Body 0
-			CreateShape(PxCapsuleGeometry(capsuleDimensions.x, capsuleDimensions.y), capsuleDensity);
-			GetShape(0)->setLocalPose(PxTransform(PxVec3(PxIdentity), PxQuat(PxReal(PxPi / 2), PxVec3(0.0f, 0.0f, 1.0f))));
-
-			// Leg 1
-			CreateShape(PxSphereGeometry(PxReal(1.0f)), 1.0f);
-			GetShape(1)->setLocalPose(PxTransform(PxVec3(2.0f, -3.0f, 0.0f), PxQuat(PxIdentity)));
 			
-			// Leg 3
-			CreateShape(PxSphereGeometry(PxReal(1.0f)), 1.0f);
-			GetShape(2)->setLocalPose(PxTransform(PxVec3(-2.0f, -3.0f, 0.0f), PxQuat(PxIdentity)));
+			CreateShape(PxBoxGeometry(dimensions), density);
 
-			// Foot 4
-			CreateShape(PxBoxGeometry(PxVec3(0.5f, 0.5f, 0.5f)), 1.0f);
-			GetShape(3)->setLocalPose(PxTransform(PxVec3(-2.0f, -5.0f, 0.0f), PxQuat(PxIdentity)));
+			//// Body 0
+			//CreateShape(PxCapsuleGeometry(capsuleDimensions.x, capsuleDimensions.y), capsuleDensity);
+			//GetShape(0)->setLocalPose(PxTransform(PxVec3(PxIdentity), PxQuat(PxReal(PxPi / 2), PxVec3(0.0f, 0.0f, 1.0f))));
+
+			//// Leg 1
+			//CreateShape(PxSphereGeometry(PxReal(1.0f)), 1.0f);
+			//GetShape(1)->setLocalPose(PxTransform(PxVec3(2.0f, -3.0f, 0.0f), PxQuat(PxIdentity)));
+			//
+			//// Leg 3
+			//CreateShape(PxSphereGeometry(PxReal(1.0f)), 1.0f);
+			//GetShape(2)->setLocalPose(PxTransform(PxVec3(-2.0f, -3.0f, 0.0f), PxQuat(PxIdentity)));
+
+			//// Foot 4
+			//CreateShape(PxBoxGeometry(PxVec3(0.5f, 0.5f, 0.5f)), 1.0f);
+			//GetShape(3)->setLocalPose(PxTransform(PxVec3(-2.0f, -5.0f, 0.0f), PxQuat(PxIdentity)));
 		}
 
+		// Player Update
 		void Update()
 		{
+
 			Movement();
+
 		}
 
+		// Handles Player Movement
 		void Movement()
 		{
 
@@ -113,14 +123,14 @@ namespace PhysicsEngine
 				((PxRigidBody*)this->Get())->setLinearVelocity(((PxRigidBody*)this->Get())->getLinearVelocity().getNormalized() * maxSpeed);
 
 			if(forward)
-				((PxRigidBody*)this->Get())->addForce(PxVec3(0.0f, 0.0f, -1.0f) * maxSpeed, PxForceMode::eIMPULSE);
+				((PxRigidBody*)this->Get())->addForce(PxVec3(0.0f, 0.0f, -1.0f) * speed, PxForceMode::eIMPULSE);
 			else if(back)
-				((PxRigidBody*)this->Get())->addForce(PxVec3(0.0f, 0.0f, 1.0f) * maxSpeed, PxForceMode::eIMPULSE);
+				((PxRigidBody*)this->Get())->addForce(PxVec3(0.0f, 0.0f, 1.0f) * speed, PxForceMode::eIMPULSE);
 
 			if(left)
-				((PxRigidBody*)this->Get())->addForce(PxVec3(-1.0f, 0.0f, 0.0f) * maxSpeed, PxForceMode::eIMPULSE);
+				((PxRigidBody*)this->Get())->addForce(PxVec3(-1.0f, 0.0f, 0.0f) * speed, PxForceMode::eIMPULSE);
 			else if (right)
-				((PxRigidBody*)this->Get())->addForce(PxVec3(1.0f, 0.0f, 0.0f) * maxSpeed, PxForceMode::eIMPULSE);
+				((PxRigidBody*)this->Get())->addForce(PxVec3(1.0f, 0.0f, 0.0f) * speed, PxForceMode::eIMPULSE);
 
 		}
 
@@ -134,10 +144,13 @@ namespace PhysicsEngine
 	// Enemy Base Class
 	class Enemy : public DynamicActor
 	{
-
 	public:
 
-		float maxSpeed = 10.0f;
+		// Enemy Done Flag
+		bool done = false;
+
+		float maxSpeed = 22.0f;
+		float speed = 44.0f;
 
 		PxRigidBody* targetToChase;
 
@@ -149,17 +162,24 @@ namespace PhysicsEngine
 			///printf("* Default Enemy Created, base properies in use! *\n");
 		}
 
+		// Base Init
 		virtual void Init()
 		{
 			this->Color(PxVec3(61.0f / 255.0f, 61.0f / 255.0f, 61.0f / 255.0f));
 		}
 
+		// Enemy Update Class
 		void Update()
 		{
+			if (done)
+				return;
+
 			Movement();
 			LimitSpeed();
+			Attack();
 		}
 
+		// Base Movement
 		virtual void Movement()
 		{
 			///printf("Default Movement method called \n");
@@ -168,10 +188,12 @@ namespace PhysicsEngine
 		// Limit Speed
 		void LimitSpeed()
 		{
+
 			if (((PxRigidBody*)this->Get())->getLinearVelocity().normalize() > maxSpeed)
 				((PxRigidBody*)this->Get())->setLinearVelocity(((PxRigidBody*)this->Get())->getLinearVelocity().getNormalized() * maxSpeed);
 		}
 
+		// Set Current Target
 		void SetChaseTarget(PxActor* target)
 		{
 			targetToChase = ((PxRigidBody*)target);
@@ -185,11 +207,21 @@ namespace PhysicsEngine
 			printf("%s's target changed to %s \n", this->Get()->getName(), target->getName());
 		}
 
+		// Base Attack
+		virtual void Attack()
+		{
+
+		}
+
 	};
 
 	// Chaser Enemy Class
 	class Chaser : public Enemy
 	{
+	private:
+
+		float attackForce = 200.0f;
+
 	public:
 
 		Chaser(const PxTransform& pose = PxTransform(PxIdentity), PxVec3 dimensions = PxVec3(0.5f, 0.5f, 0.5f), PxReal density = PxReal(2.0f))
@@ -198,13 +230,14 @@ namespace PhysicsEngine
 			CreateShape(PxBoxGeometry(dimensions), density);
 			this->Name("Chaser");
 
-			maxSpeed = 20.0f;
+			maxSpeed = 25.0f;
+			speed = 100.0f;
 		}
 	
 		void Init()
 		{
 
-			this->Color(PxVec3(100.0f / 255.0f, 10.0f / 255.0f, 100.0f / 255.0f));
+			this->Color(PxVec3(100.0f / 255.0f, 1.0f / 255.0f, 1.0f / 255.0f));
 
 		}
 
@@ -216,12 +249,33 @@ namespace PhysicsEngine
 			if (targetToChase == NULL)
 				return;
 
-			/*PxVec3 a = ((PxRigidActor*)this->GetShape())->getGlobalPose().p;
+			PxVec3 a = ((PxRigidActor*)this->Get())->getGlobalPose().p;
 			PxVec3 b = targetToChase->getGlobalPose().p;
 
-			PxVec3 direction = a - b;
+			PxVec3 direction = b - a;
 
-			((PxRigidBody*)this->GetShape())->addForce(direction);*/
+			((PxRigidBody*)this->Get())->addForce(direction * speed);
+
+		}
+
+		// Chaser Attack
+		void Attack()
+		{
+			
+			PxVec3 a = ((PxRigidActor*)this->Get())->getGlobalPose().p;
+			PxVec3 b = targetToChase->getGlobalPose().p;
+			PxVec3 targetDirection = (b - a);
+
+			// Stop force when hit
+
+			if (targetDirection.magnitude() < 7.0f)
+			{
+				((PxRigidBody*)this->Get())->addForce(targetDirection * attackForce, PxForceMode::eIMPULSE);
+				((PxRigidBody*)this->Get())->addTorque(PxVec3(10.0f, 0.0f, 0.0f) * 200.0f, PxForceMode::eIMPULSE);
+				done = true;
+			}
+			else if (!done)
+				((PxRigidBody*)this->Get())->setAngularVelocity(PxZero);
 
 		}
 	};
@@ -233,10 +287,12 @@ namespace PhysicsEngine
 		Heavy(const PxTransform& pose = PxTransform(PxIdentity), PxVec3 dimensions = PxVec3(0.5f, 0.5f, 0.5f), PxReal density = PxReal(2.0f))
 			: Enemy(pose)
 		{
+			// Body
 			CreateShape(PxBoxGeometry(dimensions), density);
 			this->Name("Heavy");
 
-			maxSpeed = 10.0f;
+			maxSpeed = 12.0f;
+			speed = 20.0f;
 		}
 
 		void Init(PxVec3 color = PxVec3(61.0f / 255.0f, 61.0f / 255.0f, 61.0f / 255.0f))
@@ -247,8 +303,31 @@ namespace PhysicsEngine
 		void Movement()
 		{
 			///printf("Heavy Movement called!\n");
+
+			PxVec3 c = ((PxRigidActor*)this->Get())->getGlobalPose().p;
+			PxVec3 d = targetToChase->getGlobalPose().p;
+			PxVec3 direction2 = (d - c);
+
+			((PxRigidBody*)this->Get())->addForce(direction2 * speed);
+
 		}
 
+	};
+
+	class MorningStar : public DynamicActor
+	{
+	public:
+
+		MorningStar(const PxTransform& pose = PxTransform(PxIdentity), PxReal ballRadius = PxReal(1.0f), PxReal ballDensity = PxReal(1.0f))
+			: DynamicActor(pose)
+		{
+			// Handle
+			CreateShape(PxBoxGeometry(PxVec3(0.5f, 0.5f, 0.5f)), PxReal(1.0f));
+			this->Name("Morning Star");
+
+			// Ball
+			CreateShape(PxSphereGeometry(ballRadius), ballDensity);
+		}
 
 	};
 

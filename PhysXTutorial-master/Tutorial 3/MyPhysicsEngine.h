@@ -187,12 +187,11 @@ namespace PhysicsEngine
 		// Private Game Objects
 		Plane* plane;
 		Box* playerBox;
-		Box* foot;
 		Capsule* ball;
 		Goal* goal;
 
 		// Joints
-		RevoluteJoint* legJoint;
+		//RevoluteJoint* legJoint;
 
 		// Simulation Callback
 		MySimulationEventCallback* my_callback;
@@ -234,6 +233,8 @@ namespace PhysicsEngine
 			plane = new Plane();
 			plane->Color(PxVec3(100.0f/255.f, 210.0f/255.f, 100.0f/255.f));
 			plane->Name("Pitch");
+			PxMaterial* planeMaterial = GetPhysics()->createMaterial(0.2f, 0.2f, 0.1f);
+			plane->Material(planeMaterial);
 			Add(plane);
 
 			// Goal Setup
@@ -249,68 +250,45 @@ namespace PhysicsEngine
 			ball->Material(ballMaterial);
 			Add(ball);
 
-			// Player Setup
-			playerBox = new Box(PxTransform(PxVec3(0.0f, 0.5f, 0.0f), PxQuat(PxIdentity)), PxVec3(1.0f, 2.0f, 1.0f), PxReal(5.0f));
-			playerBox->Color(color_palette[1]);
-			//playerBox->Name("Player");
-			Add(playerBox);
-
-			// Player Compound Kick Test
-			foot = new Box(PxTransform(PxVec3(0.0f, 0.0f, 0.0f)), PxVec3(0.5f, 0.5f, 0.5f), PxReal(10.0f));
-			Add(foot);
-
-			player = new Player(PxTransform(PxVec3(-5.0f, 7.5f, 0.0f)));
-			((PxActor*)player->Get())->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
+			player = new Player(PxTransform(PxVec3(-5.0f, 0.5f, 0.0f)));
 			player->Name("Player");
-			//player->SetKinematic(true);
+			//PxMaterial* playerMaterial = GetPhysics()->createMaterial(0.1f, 0.1f, 0.0f);
+			//player->Material(playerMaterial);
 			Add(player);
 
-			legJoint = new RevoluteJoint(player, PxTransform(PxVec3(2.0f, -5.0f, 0.0f), PxQuat(PxReal(2 * PxPi), PxVec3(1.0f, 0.0f, 0.0f))), foot, PxTransform(PxVec3(0.0f, 1.5f, 0.0f)));
+#pragma region RevoluteJoint
+
+			// Player Compound Kick Test
+			/*foot = new Box(PxTransform(PxVec3(0.0f, 0.0f, 0.0f)), PxVec3(0.5f, 0.5f, 0.5f), PxReal(10.0f));
+			Add(foot);*/
+			/*legJoint = new RevoluteJoint(player, PxTransform(PxVec3(2.0f, -5.0f, 0.0f), PxQuat(PxReal(2 * PxPi), PxVec3(1.0f, 0.0f, 0.0f))), foot, PxTransform(PxVec3(0.0f, 1.5f, 0.0f)));
 			legJoint->SetLimitsByDegrees(0.0f, 90.0f);
 			((PxRevoluteJoint*)legJoint->Get())->setRevoluteJointFlag(PxRevoluteJointFlag::eLIMIT_ENABLED, true);
-			legJoint->Get()->setConstraintFlag(PxConstraintFlag::eVISUALIZATION, true);
+			legJoint->Get()->setConstraintFlag(PxConstraintFlag::eVISUALIZATION, true);*/
+#pragma endregion
 			
 			// Enemies
-			heavyEnemy = new Heavy(PxTransform(PxVec3(0.0f, 5.0f, 0.0f)));
-			heavyEnemy->Init();
-			Add(heavyEnemy);
-
-			chaserEnemy = new Chaser(PxTransform(PxVec3(0.0f, 10.0f, 0.0f)));
+			chaserEnemy = new Chaser(PxTransform(PxVec3(-10.0f, 0.5f, -20.0f)), PxVec3(1.0f, 2.0f, 1.0f), 2.0f);
 			chaserEnemy->Init();
 			chaserEnemy->SetChaseTarget(player->Get());
 			Add(chaserEnemy);
+
+			heavyEnemy = new Heavy(PxTransform(PxVec3(0.0f, 0.5f, 0.0f)), PxVec3(1.0f, 2.0f, 1.0f), 2.0f);
+			heavyEnemy->Init();
+			heavyEnemy->SetChaseTarget(player->Get());
+			Add(heavyEnemy);
+
 		}
 
 		// Custom update function
 		virtual void CustomUpdate() 
 		{
-			// Object Updates
+			// Player Update
 			player->Update();
 
+			//Enemy Updates
 			heavyEnemy->Update();
 			chaserEnemy->Update();
-
-
-			// ====================  Enemy Chase Code
-			PxVec3 a = ((PxRigidActor*)chaserEnemy->Get())->getGlobalPose().p;
-			PxVec3 b = chaserEnemy->targetToChase->getGlobalPose().p;
-			PxVec3 direction = (b - a);
-
-			((PxRigidBody*)chaserEnemy->Get())->addForce(direction * chaserEnemy->maxSpeed);
-
-			PxVec3 c = ((PxRigidActor*)heavyEnemy->Get())->getGlobalPose().p;
-			PxVec3 d = chaserEnemy->targetToChase->getGlobalPose().p;
-			PxVec3 direction2 = (d - c);
-
-			((PxRigidBody*)heavyEnemy->Get())->addForce(direction2 * heavyEnemy->maxSpeed);
-			// =======================================
-
-			// Kick Test Code
-			if (pressed)
-				legJoint->DriveVelocity(100.0f);
-			else
-				legJoint->DriveVelocity(-100.0f);
-
 		}
 
 		/// An example use of key release handling

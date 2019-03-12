@@ -56,5 +56,6 @@ namespace VisualDebugger
 
 		///move camera down
 		void MoveDown(PxReal delta_time);
+
 	};
 }
