@@ -186,12 +186,13 @@ namespace PhysicsEngine
 	{
 		// Private Game Objects
 		Plane* plane;
-		Box* playerBox;
+		Box* handle;
 		Capsule* ball;
 		Goal* goal;
+		Sphere* weaponHead;
 
 		// Joints
-		//RevoluteJoint* legJoint;
+		RevoluteJoint* weaponJoint;
 
 		// Simulation Callback
 		MySimulationEventCallback* my_callback;
@@ -219,9 +220,9 @@ namespace PhysicsEngine
 		}
 
 		// Scene Init
-		virtual void CustomInit() 
+		virtual void CustomInit()
 		{
-			SetVisualisation();			
+			SetVisualisation();
 
 			GetMaterial()->setDynamicFriction(.2f);
 
@@ -231,7 +232,7 @@ namespace PhysicsEngine
 
 			// Plane Setup
 			plane = new Plane();
-			plane->Color(PxVec3(100.0f/255.f, 210.0f/255.f, 100.0f/255.f));
+			plane->Color(PxVec3(100.0f / 255.f, 210.0f / 255.f, 100.0f / 255.f));
 			plane->Name("Pitch");
 			PxMaterial* planeMaterial = GetPhysics()->createMaterial(0.2f, 0.2f, 0.1f);
 			plane->Material(planeMaterial);
@@ -266,17 +267,27 @@ namespace PhysicsEngine
 			((PxRevoluteJoint*)legJoint->Get())->setRevoluteJointFlag(PxRevoluteJointFlag::eLIMIT_ENABLED, true);
 			legJoint->Get()->setConstraintFlag(PxConstraintFlag::eVISUALIZATION, true);*/
 #pragma endregion
-			
+
 			// Enemies
-			chaserEnemy = new Chaser(PxTransform(PxVec3(-10.0f, 0.5f, -20.0f)), PxVec3(1.0f, 2.0f, 1.0f), 2.0f);
+			chaserEnemy = new Chaser(PxTransform(PxVec3(-10.0f, 1.0f, -20.0f)), PxVec3(1.0f, 2.0f, 1.0f), 2.0f);
 			chaserEnemy->Init();
 			chaserEnemy->SetChaseTarget(player->Get());
-			Add(chaserEnemy);
+			aAdd(chaserEnemy);
 
 			heavyEnemy = new Heavy(PxTransform(PxVec3(0.0f, 0.5f, 0.0f)), PxVec3(1.0f, 2.0f, 1.0f), 2.0f);
 			heavyEnemy->Init();
 			heavyEnemy->SetChaseTarget(player->Get());
 			Add(heavyEnemy);
+
+			handle = new Box(PxTransform(PxVec3(0.0f, 6.0f, 0.0f)), PxVec3(0.25f, 1.50f, 0.25f), 1.0f);
+			handle->SetKinematic(true);
+			Add(handle);
+
+			weaponHead = new Sphere(PxTransform(PxVec3(0.0f, 6.0f, 0.0f)), 1.0f, 10.0f);
+			Add(weaponHead);
+
+			weaponJoint = new RevoluteJoint(handle, PxTransform(PxVec3(0.0f, 1.0f, 0.0f), PxQuat(PxReal(PxPi / 2), PxVec3(0.0f, 0.0f, 1.0f))), weaponHead, PxTransform(PxVec3(0.0f, 1.0f, 4.0f)));
+			weaponJoint->DriveVelocity(20.0f);
 
 		}
 
@@ -287,8 +298,11 @@ namespace PhysicsEngine
 			player->Update();
 
 			//Enemy Updates
-			heavyEnemy->Update();
 			chaserEnemy->Update();
+			heavyEnemy->Update();
+
+			PxVec3 offset = { 0.0f, 1.0f, 1.5f };
+			((PxRigidBody*)handle->Get())->setGlobalPose(PxTransform(((PxRigidBody*)heavyEnemy->Get())->getGlobalPose().p + offset, PxQuat(PxIdentity)));
 		}
 
 		/// An example use of key release handling

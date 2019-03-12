@@ -157,8 +157,8 @@ namespace PhysicsEngine
 		Enemy(const PxTransform& pose = PxTransform(PxIdentity), PxVec3 dimensions = PxVec3(0.5f, 0.5f, 0.5f), PxReal density = PxReal(1.0f))
 			: DynamicActor(pose)
 		{
-			CreateShape(PxBoxGeometry(dimensions), density);
-			this->Name("Default Enemy");
+			//CreateShape(PxBoxGeometry(dimensions), density);
+			//this->Name("Default Enemy");
 			///printf("* Default Enemy Created, base properies in use! *\n");
 		}
 
@@ -307,9 +307,9 @@ namespace PhysicsEngine
 			PxVec3 c = ((PxRigidActor*)this->Get())->getGlobalPose().p;
 			PxVec3 d = targetToChase->getGlobalPose().p;
 			PxVec3 direction2 = (d - c);
+			PxQuat rotation = ((PxRigidBody*)this->Get())->getGlobalPose().q;
 
 			((PxRigidBody*)this->Get())->addForce(direction2 * speed);
-
 		}
 
 	};
