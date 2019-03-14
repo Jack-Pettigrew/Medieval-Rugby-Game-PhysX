@@ -16,6 +16,7 @@ namespace VisualDebugger
 		PxVec3	dir, dir_init;
 		PxVec3 viewOffset;
 		PxReal speed, speed_init;
+		PxRigidBody* playerTarget;
 
 	public:
 		///constructor
@@ -23,6 +24,11 @@ namespace VisualDebugger
 
 		///reset view
 		void Reset();
+
+		///target for camera to follow
+		void SetFollowTarget(PxRigidBody * target);
+
+		void FollowUpdate(PxReal delta_time);
 
 		///handle camera motion
 		void Motion(int dx, int dy, PxReal delta_time);

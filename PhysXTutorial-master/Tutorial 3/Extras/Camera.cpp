@@ -20,6 +20,19 @@ namespace VisualDebugger
 		viewOffset = PxVec3(0.0f, 0.0f, 5.0f);
 	}
 
+	void Camera::SetFollowTarget(PxRigidBody* target)
+	{
+		playerTarget = target;
+	}
+
+	void Camera::FollowUpdate(PxReal)
+	{
+		if (playerTarget == nullptr)
+			return;
+
+		eye = playerTarget->getGlobalPose().p + PxVec3(0.0f, 10.0f, 20.0f);
+	}
+
 	void Camera::Motion(int dx, int dy, PxReal delta_time)
 	{
 		PxVec3 viewY = dir.cross(PxVec3(0,1,0)).getNormalized();

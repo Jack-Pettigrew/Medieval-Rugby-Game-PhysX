@@ -66,20 +66,28 @@ namespace PhysicsEngine
 	{
 	private:
 		
-		
-	public:
+		PxRigidBody* ballTarget;
 
+		PxVec3 position, ballOffset = { 0, 0, 2.0f };
+
+		float kickLength = 55.0f;
+		float kickHeight = 80.0f;
+		
 		float maxSpeed = 19.0f;
 		float speed = 50.0f;
 
+	public:
+
 		bool forward = false, back = false, left = false, right = false;
-		bool done = false;
+		bool follow = true, done = false;
 
 		Player(const PxTransform& pose = PxTransform(PxIdentity), PxVec3 dimensions = PxVec3(1.0f, 2.0f, 1.0f), PxReal density = 2.0f)
 			: DynamicActor(pose)
 		{
 
 			Create(dimensions, density);
+
+			position = pose.p;
 
 		}
 
@@ -111,13 +119,15 @@ namespace PhysicsEngine
 		{
 
 			Movement();
-
+			
+			// Ball follow Player
+			if (ballTarget != nullptr && follow)
+				ballTarget->setGlobalPose(PxTransform(position - ballOffset, PxQuat(PxIdentity)));
 		}
 
 		// Handles Player Movement
 		void Movement()
 		{
-
 			// Limit Player Speed (Check Magnitude)
 			if (((PxRigidBody*)this->Get())->getLinearVelocity().normalize() > maxSpeed)
 				((PxRigidBody*)this->Get())->setLinearVelocity(((PxRigidBody*)this->Get())->getLinearVelocity().getNormalized() * maxSpeed);
@@ -131,7 +141,35 @@ namespace PhysicsEngine
 				((PxRigidBody*)this->Get())->addForce(PxVec3(-1.0f, 0.0f, 0.0f) * speed, PxForceMode::eIMPULSE);
 			else if (right)
 				((PxRigidBody*)this->Get())->addForce(PxVec3(1.0f, 0.0f, 0.0f) * speed, PxForceMode::eIMPULSE);
+			
+			// Update Player Position
+			position = ((PxRigidBody*)this->Get())->getGlobalPose().p;
 
+			
+
+		}
+
+		// Releases Ball and Applies Force
+		void Kick()
+		{
+			// If no target to follow...
+			if (ballTarget == nullptr)
+				return;
+
+			follow = false;
+
+			float currentVel = ((PxRigidBody*)this->Get())->getLinearVelocity().normalize();
+			if (currentVel < 1)
+				currentVel = 1.0f;
+
+			ballTarget->addForce(PxVec3(0.0f, 1.0f * kickHeight, -1.0f * kickLength), PxForceMode::eIMPULSE);
+			
+			ballTarget = nullptr;
+		}
+
+		void SetBallTarget(PxRigidBody* ball)
+		{
+			ballTarget = ball;
 		}
 
 		// Custom Player Render

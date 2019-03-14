@@ -239,20 +239,21 @@ namespace PhysicsEngine
 			Add(plane);
 
 			// Goal Setup
-			goal = new Goal(PxTransform(PxVec3(0.0f, 5.0f, -100.0f)));
+			goal = new Goal(PxTransform(PxVec3(0.0f, 5.0f, -200.0f)));
 			//((PxRigidBody*)goal->Get())->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, true);
 			Add(goal);
 
 			// Ball Setup
-			ball = new Capsule(PxTransform(PxVec3(-4.0f, 5.0f, -2.0f), PxQuat(PxIdentity)), PxVec2(0.5f, 0.5f));
+			ball = new Capsule(PxTransform(PxVec3(-4.0f, 5.0f, -2.0f), PxQuat(PxIdentity)), PxVec2(0.5f, 0.5f), 2.0f);
 			ball->Color(color_palette[2]);
 			ball->Name("Ball");
 			PxMaterial* ballMaterial = GetPhysics()->createMaterial(0.2f, 0.5f, 1.0f);
 			ball->Material(ballMaterial);
 			Add(ball);
 
-			player = new Player(PxTransform(PxVec3(-5.0f, 0.5f, 0.0f)));
+			player = new Player(PxTransform(PxVec3(-5.0f, 0.5f, -17.0f)));
 			player->Name("Player");
+			player->SetBallTarget( ((PxRigidBody*)ball->Get()) );
 			//PxMaterial* playerMaterial = GetPhysics()->createMaterial(0.1f, 0.1f, 0.0f);
 			//player->Material(playerMaterial);
 			Add(player);
@@ -269,12 +270,12 @@ namespace PhysicsEngine
 #pragma endregion
 
 			// Enemies
-			chaserEnemy = new Chaser(PxTransform(PxVec3(-10.0f, 1.0f, -20.0f)), PxVec3(1.0f, 2.0f, 1.0f), 2.0f);
+			chaserEnemy = new Chaser(PxTransform(PxVec3(-10.0f, 1.0f, -40.0f)), PxVec3(1.0f, 2.0f, 1.0f), 2.0f);
 			chaserEnemy->Init();
 			chaserEnemy->SetChaseTarget(player->Get());
-			aAdd(chaserEnemy);
+			Add(chaserEnemy);
 
-			heavyEnemy = new Heavy(PxTransform(PxVec3(0.0f, 0.5f, 0.0f)), PxVec3(1.0f, 2.0f, 1.0f), 2.0f);
+			heavyEnemy = new Heavy(PxTransform(PxVec3(5.0f, 0.5f, -30.0f)), PxVec3(1.0f, 2.0f, 1.0f), 2.0f);
 			heavyEnemy->Init();
 			heavyEnemy->SetChaseTarget(player->Get());
 			Add(heavyEnemy);

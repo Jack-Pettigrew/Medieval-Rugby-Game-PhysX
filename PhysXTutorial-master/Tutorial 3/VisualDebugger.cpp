@@ -62,7 +62,7 @@ namespace VisualDebugger
 		Renderer::InitWindow(window_name, width, height);
 		Renderer::Init();
 
-		camera = new Camera(PxVec3(0.0f, 80.0f, 15.0f), PxVec3(0.f ,-1.5f, -1.0f), 5.f);
+		camera = new Camera(PxVec3(0.0f, 40.0f, 40.0f), PxVec3(0.f , -0.5f, -1.0f), 40.0f);
 		//camera = new Camera(PxVec3(0.0f, 5.0f, 15.0f), PxVec3(0.f, 0.0f, -1.0f), 5.f);
 
 		//initialise HUD
@@ -168,6 +168,10 @@ namespace VisualDebugger
 
 		//perform a single simulation step
 		scene->Update(delta_time);
+
+		camera->SetFollowTarget(((PxRigidBody*)scene->player->Get()));
+
+		camera->FollowUpdate(delta_time);
 	}
 
 	// On Key Press
@@ -209,6 +213,8 @@ namespace VisualDebugger
 		case 'D':
 			scene->player->right = false;
 			break;
+		case 'F':
+			scene->player->Kick();
 
 		case 'R':
 			scene->ExampleKeyReleaseHandler();
@@ -227,18 +233,18 @@ namespace VisualDebugger
 	{
 		switch (toupper(key))
 		{
-		/*case 'W':
+		case '8':
 			camera->MoveForward(delta_time);
 			break;
-		case 'S':
+		case '5':
 			camera->MoveBackward(delta_time);
 			break;
-		case 'A':
+		case '4':
 			camera->MoveLeft(delta_time);
 			break;
-		case 'D':
+		case '6':
 			camera->MoveRight(delta_time);
-			break;*/
+			break;
 		case 'Q':
 			camera->MoveUp(delta_time);
 			break;
@@ -329,11 +335,11 @@ namespace VisualDebugger
 			//reset camera view
 			camera->Reset();
 			break;
-
 			//simulation control
 		case GLUT_KEY_F9:
 			//select next actor
 			scene->SelectNextActor();
+			camera->SetFollowTarget(scene->GetSelectedActor());
 			break;
 		case GLUT_KEY_F10:
 			//toggle scene pause
