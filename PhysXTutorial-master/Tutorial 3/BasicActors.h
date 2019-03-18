@@ -65,29 +65,20 @@ namespace PhysicsEngine
 	class Player : public DynamicActor
 	{
 	private:
-		
-		PxRigidBody* ballTarget;
-
-		PxVec3 position, ballOffset = { 0, 0, 2.0f };
-
-		float kickLength = 55.0f;
-		float kickHeight = 80.0f;
-		
+			
 		float maxSpeed = 19.0f;
 		float speed = 50.0f;
 
 	public:
 
 		bool forward = false, back = false, left = false, right = false;
-		bool follow = true, done = false;
+		bool done = false;
 
 		Player(const PxTransform& pose = PxTransform(PxIdentity), PxVec3 dimensions = PxVec3(1.0f, 2.0f, 1.0f), PxReal density = 2.0f)
 			: DynamicActor(pose)
 		{
 
 			Create(dimensions, density);
-
-			position = pose.p;
 
 		}
 
@@ -97,21 +88,6 @@ namespace PhysicsEngine
 			
 			CreateShape(PxBoxGeometry(dimensions), density);
 
-			//// Body 0
-			//CreateShape(PxCapsuleGeometry(capsuleDimensions.x, capsuleDimensions.y), capsuleDensity);
-			//GetShape(0)->setLocalPose(PxTransform(PxVec3(PxIdentity), PxQuat(PxReal(PxPi / 2), PxVec3(0.0f, 0.0f, 1.0f))));
-
-			//// Leg 1
-			//CreateShape(PxSphereGeometry(PxReal(1.0f)), 1.0f);
-			//GetShape(1)->setLocalPose(PxTransform(PxVec3(2.0f, -3.0f, 0.0f), PxQuat(PxIdentity)));
-			//
-			//// Leg 3
-			//CreateShape(PxSphereGeometry(PxReal(1.0f)), 1.0f);
-			//GetShape(2)->setLocalPose(PxTransform(PxVec3(-2.0f, -3.0f, 0.0f), PxQuat(PxIdentity)));
-
-			//// Foot 4
-			//CreateShape(PxBoxGeometry(PxVec3(0.5f, 0.5f, 0.5f)), 1.0f);
-			//GetShape(3)->setLocalPose(PxTransform(PxVec3(-2.0f, -5.0f, 0.0f), PxQuat(PxIdentity)));
 		}
 
 		// Player Update
@@ -119,10 +95,7 @@ namespace PhysicsEngine
 		{
 
 			Movement();
-			
-			// Ball follow Player
-			if (ballTarget != nullptr && follow)
-				ballTarget->setGlobalPose(PxTransform(position - ballOffset, PxQuat(PxIdentity)));
+		
 		}
 
 		// Handles Player Movement
@@ -140,36 +113,8 @@ namespace PhysicsEngine
 			if(left)
 				((PxRigidBody*)this->Get())->addForce(PxVec3(-1.0f, 0.0f, 0.0f) * speed, PxForceMode::eIMPULSE);
 			else if (right)
-				((PxRigidBody*)this->Get())->addForce(PxVec3(1.0f, 0.0f, 0.0f) * speed, PxForceMode::eIMPULSE);
-			
-			// Update Player Position
-			position = ((PxRigidBody*)this->Get())->getGlobalPose().p;
+				((PxRigidBody*)this->Get())->addForce(PxVec3(1.0f, 0.0f, 0.0f) * speed, PxForceMode::eIMPULSE);		
 
-			
-
-		}
-
-		// Releases Ball and Applies Force
-		void Kick()
-		{
-			// If no target to follow...
-			if (ballTarget == nullptr)
-				return;
-
-			follow = false;
-
-			float currentVel = ((PxRigidBody*)this->Get())->getLinearVelocity().normalize();
-			if (currentVel < 1)
-				currentVel = 1.0f;
-
-			ballTarget->addForce(PxVec3(0.0f, 1.0f * kickHeight, -1.0f * kickLength), PxForceMode::eIMPULSE);
-			
-			ballTarget = nullptr;
-		}
-
-		void SetBallTarget(PxRigidBody* ball)
-		{
-			ballTarget = ball;
 		}
 
 		// Custom Player Render
@@ -309,7 +254,7 @@ namespace PhysicsEngine
 			if (targetDirection.magnitude() < 7.0f)
 			{
 				((PxRigidBody*)this->Get())->addForce(targetDirection * attackForce, PxForceMode::eIMPULSE);
-				((PxRigidBody*)this->Get())->addTorque(PxVec3(10.0f, 0.0f, 0.0f) * 200.0f, PxForceMode::eIMPULSE);
+				((PxRigidBody*)this->Get())->addTorque(PxVec3(20.0f, 0.0f, 0.0f) * 125.0f, PxForceMode::eIMPULSE);
 				done = true;
 			}
 			else if (!done)
@@ -360,11 +305,74 @@ namespace PhysicsEngine
 			: DynamicActor(pose)
 		{
 			// Handle
-			CreateShape(PxBoxGeometry(PxVec3(0.5f, 0.5f, 0.5f)), PxReal(1.0f));
+			CreateShape(PxBoxGeometry(PxVec3(0.5f, 0.5f, 0.5f)), ballDensity);
 			this->Name("Morning Star");
 
 			// Ball
 			CreateShape(PxSphereGeometry(ballRadius), ballDensity);
+		}
+
+	};
+
+	class TrebuchetBase : public DynamicActor
+	{
+	public:
+		PxVec3 position, ballOffset = { -0.5f, -2.0f, -2.0f };
+		PxRigidBody* ballTarget;
+		bool follow = true;
+
+		float kickLength = 55.0f;
+		float kickHeight = 80.0f;
+
+		TrebuchetBase(const PxTransform& pose = PxTransform(PxIdentity), PxReal density = PxReal(1.0f))
+			: DynamicActor(pose)
+		{
+
+			CreateShape(PxBoxGeometry(PxVec3(0.5f, 0.1f, 1.0f)), density);
+			this->Name("Trebuchet Base");
+
+		}
+
+		void Update()
+		{
+			PxVec3 position = ((PxRigidBody*)this->Get())->getGlobalPose().p;
+
+			// Ball follow Trebuchet
+			if (ballTarget != nullptr && follow)
+				ballTarget->setGlobalPose(PxTransform(position - ballOffset, PxQuat(PxIdentity)));
+
+		}
+
+		// Releases Ball and Applies Force
+		void Kick()
+		{
+			// If no target to follow...
+			if (ballTarget == nullptr)
+				return;
+
+			follow = false;
+
+			ballTarget = nullptr;
+		}
+
+		void SetBallTarget(PxRigidBody* ball)
+		{
+			ballTarget = ball;
+		}
+	};
+
+	class TrebuchetArm : public DynamicActor
+	{
+	public:
+
+		TrebuchetArm(const PxTransform& pose = PxTransform(PxIdentity), PxReal density = PxReal(1.0f))
+			: DynamicActor(pose)
+		{
+			CreateShape(PxBoxGeometry(PxVec3(0.5f, 0.1f, 3.0f)), density);
+
+			CreateShape(PxBoxGeometry(PxVec3(1.0f, 0.1f, 1.0f)), density);
+
+			GetShape(1)->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 3.5f)));
 		}
 
 	};

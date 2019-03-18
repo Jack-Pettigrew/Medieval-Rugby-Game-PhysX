@@ -214,7 +214,7 @@ namespace VisualDebugger
 			scene->player->right = false;
 			break;
 		case 'F':
-			scene->player->Kick();
+			scene->trebuchetBase->Kick();
 
 		case 'R':
 			scene->ExampleKeyReleaseHandler();

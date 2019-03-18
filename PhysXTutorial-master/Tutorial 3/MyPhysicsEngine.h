@@ -192,15 +192,18 @@ namespace PhysicsEngine
 		Sphere* weaponHead;
 
 		// Joints
-		RevoluteJoint* weaponJoint;
+		RevoluteJoint* weaponJoint,* trebuchetJoint;
 
 		// Simulation Callback
 		MySimulationEventCallback* my_callback;
 		
 	public:
+		Player* player;
+
+		TrebuchetBase* trebuchetBase;
+		TrebuchetArm* trebuchetArm;
 
 		// Public Game Objects
-		Player* player;
 		Enemy* heavyEnemy, * chaserEnemy;
 
 		bool pressed = false;
@@ -230,6 +233,7 @@ namespace PhysicsEngine
 			my_callback = new MySimulationEventCallback();
 			px_scene->setSimulationEventCallback(my_callback);
 
+
 			// Plane Setup
 			plane = new Plane();
 			plane->Color(PxVec3(100.0f / 255.f, 210.0f / 255.f, 100.0f / 255.f));
@@ -238,10 +242,12 @@ namespace PhysicsEngine
 			plane->Material(planeMaterial);
 			Add(plane);
 
+
 			// Goal Setup
 			goal = new Goal(PxTransform(PxVec3(0.0f, 5.0f, -200.0f)));
 			//((PxRigidBody*)goal->Get())->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, true);
 			Add(goal);
+
 
 			// Ball Setup
 			ball = new Capsule(PxTransform(PxVec3(-4.0f, 5.0f, -2.0f), PxQuat(PxIdentity)), PxVec2(0.5f, 0.5f), 2.0f);
@@ -253,42 +259,48 @@ namespace PhysicsEngine
 
 			player = new Player(PxTransform(PxVec3(-5.0f, 0.5f, -17.0f)));
 			player->Name("Player");
-			player->SetBallTarget( ((PxRigidBody*)ball->Get()) );
-			//PxMaterial* playerMaterial = GetPhysics()->createMaterial(0.1f, 0.1f, 0.0f);
-			//player->Material(playerMaterial);
+			///PxMaterial* playerMaterial = GetPhysics()->createMaterial(0.1f, 0.1f, 0.0f);
+			///player->Material(playerMaterial);
 			Add(player);
 
-#pragma region RevoluteJoint
-
-			// Player Compound Kick Test
-			/*foot = new Box(PxTransform(PxVec3(0.0f, 0.0f, 0.0f)), PxVec3(0.5f, 0.5f, 0.5f), PxReal(10.0f));
-			Add(foot);*/
-			/*legJoint = new RevoluteJoint(player, PxTransform(PxVec3(2.0f, -5.0f, 0.0f), PxQuat(PxReal(2 * PxPi), PxVec3(1.0f, 0.0f, 0.0f))), foot, PxTransform(PxVec3(0.0f, 1.5f, 0.0f)));
-			legJoint->SetLimitsByDegrees(0.0f, 90.0f);
-			((PxRevoluteJoint*)legJoint->Get())->setRevoluteJointFlag(PxRevoluteJointFlag::eLIMIT_ENABLED, true);
-			legJoint->Get()->setConstraintFlag(PxConstraintFlag::eVISUALIZATION, true);*/
-#pragma endregion
 
 			// Enemies
 			chaserEnemy = new Chaser(PxTransform(PxVec3(-10.0f, 1.0f, -40.0f)), PxVec3(1.0f, 2.0f, 1.0f), 2.0f);
 			chaserEnemy->Init();
 			chaserEnemy->SetChaseTarget(player->Get());
-			Add(chaserEnemy);
+			//Add(chaserEnemy);
 
 			heavyEnemy = new Heavy(PxTransform(PxVec3(5.0f, 0.5f, -30.0f)), PxVec3(1.0f, 2.0f, 1.0f), 2.0f);
 			heavyEnemy->Init();
 			heavyEnemy->SetChaseTarget(player->Get());
-			Add(heavyEnemy);
+			//Add(heavyEnemy);
+			
 
+			// Weapons
 			handle = new Box(PxTransform(PxVec3(0.0f, 6.0f, 0.0f)), PxVec3(0.25f, 1.50f, 0.25f), 1.0f);
 			handle->SetKinematic(true);
 			Add(handle);
 
-			weaponHead = new Sphere(PxTransform(PxVec3(0.0f, 6.0f, 0.0f)), 1.0f, 10.0f);
+			weaponHead = new Sphere(PxTransform(PxVec3(0.0f, 6.0f, 0.0f)), 1.0f, 200.0f);
 			Add(weaponHead);
 
 			weaponJoint = new RevoluteJoint(handle, PxTransform(PxVec3(0.0f, 1.0f, 0.0f), PxQuat(PxReal(PxPi / 2), PxVec3(0.0f, 0.0f, 1.0f))), weaponHead, PxTransform(PxVec3(0.0f, 1.0f, 4.0f)));
 			weaponJoint->DriveVelocity(20.0f);
+
+
+			// Trebuchet
+			trebuchetBase = new TrebuchetBase(PxTransform(PxVec3(0.0f, 6.0f, 0.0f)));
+			trebuchetBase->SetKinematic(true);
+			trebuchetBase->SetBallTarget(((PxRigidBody*)ball->Get()));
+			Add(trebuchetBase);
+
+			trebuchetArm = new TrebuchetArm(PxTransform(((PxRigidBody*)trebuchetBase->Get())->getGlobalPose().p));
+			Add(trebuchetArm);
+
+			trebuchetJoint = new RevoluteJoint(trebuchetBase, PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(PxReal(PxPi * 2), PxVec3(1.0f, 0.0f, 0.0f))), trebuchetArm, PxTransform(PxVec3(0.0f, 0.0f, -2.5f)));
+			trebuchetJoint->SetLimits(PxPi, PxPi * 2);
+
+			//trebuchetJoint->DriveVelocity(-10.0f);
 
 		}
 
@@ -297,6 +309,7 @@ namespace PhysicsEngine
 		{
 			// Player Update
 			player->Update();
+			trebuchetBase->Update();
 
 			//Enemy Updates
 			chaserEnemy->Update();
@@ -304,6 +317,12 @@ namespace PhysicsEngine
 
 			PxVec3 offset = { 0.0f, 1.0f, 1.5f };
 			((PxRigidBody*)handle->Get())->setGlobalPose(PxTransform(((PxRigidBody*)heavyEnemy->Get())->getGlobalPose().p + offset, PxQuat(PxIdentity)));
+
+			if (!player->done)
+			{
+				PxVec3 offset2 = { 3.0f, -1.5f, 0.0f };
+				((PxRigidBody*)trebuchetBase->Get())->setGlobalPose(PxTransform(((PxRigidBody*)player->Get())->getGlobalPose().p + offset2, PxQuat(PxIdentity)));
+			}
 		}
 
 		/// An example use of key release handling
