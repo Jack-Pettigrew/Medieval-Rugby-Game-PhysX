@@ -90,10 +90,11 @@ namespace PhysicsEngine
 	class MySimulationEventCallback : public PxSimulationEventCallback
 	{
 	public:
-		//an example variable that will be checked in the main simulation loop
-		bool trigger;
 
-		MySimulationEventCallback() : trigger(false) {}
+		//an example variable that will be checked in the main simulation loop
+		bool trigger, playerTrigger;
+
+		MySimulationEventCallback() : trigger(false), playerTrigger(false) {}
 
 		///Method called when the contact with the trigger object is detected.
 		virtual void onTrigger(PxTriggerPair* pairs, PxU32 count) 
@@ -109,12 +110,34 @@ namespace PhysicsEngine
 					{
 						cerr << "onTrigger::eNOTIFY_TOUCH_FOUND" << endl;
 						trigger = true;
+
+						// Player Trigger
+						string otherActorName = pairs[i].otherActor->getName();
+						string triggerActorName = pairs[i].triggerActor->getName();
+
+						if (otherActorName == "Player" && triggerActorName == "Trebuchet Trigger")
+						{
+							playerTrigger = true;
+							printf("Trebuchet Trigger Called\n");
+						}
+
+						if (otherActorName == "Chaser" && triggerActorName == "Player")
+							printf("COLLISION PLAYER TRIGGER\n");
+
 					}
 					//check if eNOTIFY_TOUCH_LOST trigger
 					if (pairs[i].status & PxPairFlag::eNOTIFY_TOUCH_LOST)
 					{
 						cerr << "onTrigger::eNOTIFY_TOUCH_LOST" << endl;
 						trigger = false;
+
+						// Player Trigger
+						string otherActorName = pairs[i].otherActor->getName();
+
+						if (otherActorName == "Player")
+						{
+							playerTrigger = false;
+						}
 					}
 				}
 			}
@@ -182,6 +205,7 @@ namespace PhysicsEngine
 
 	// ============================  Rugby Scene Class  ============================
 
+
 	class MyScene : public Scene
 	{
 		// Private Game Objects
@@ -192,20 +216,22 @@ namespace PhysicsEngine
 		Sphere* weaponHead;
 		Box* trebuchetTrigger;
 
-		// Joints
 
 		// Simulation Callback
 		MySimulationEventCallback* my_callback;
 		
 	public:
-		Player* player;
 
+		enum PlayerController  { playerControls, trebuchetControls };
+
+		// Public Game Objects
+		Player *player;
+		Enemy *heavyEnemy[5], *chaserEnemy[2];
 		TrebuchetBase* trebuchetBase;
 		TrebuchetArm* trebuchetArm;
 		RevoluteJoint* weaponJoint,* trebuchetJoint;
 
-		// Public Game Objects
-		Enemy* heavyEnemy, * chaserEnemy;
+		PlayerController playerController; 
 
 		bool pressed = false;
 
@@ -246,7 +272,7 @@ namespace PhysicsEngine
 
 			// Goal Setup
 			goal = new Goal(PxTransform(PxVec3(0.0f, 5.0f, -400.0f)));
-			//((PxRigidBody*)goal->Get())->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, true);
+			///((PxRigidBody*)goal->Get())->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, true);
 			Add(goal);
 
 
@@ -257,10 +283,13 @@ namespace PhysicsEngine
 			PxMaterial* ballMaterial = GetPhysics()->createMaterial(0.2f, 0.5f, 1.0f);
 			ball->Material(ballMaterial);
 			((PxRigidBody*)ball->Get())->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, true);
+			((PxRigidBody*)ball->Get())->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
 			Add(ball);
 
 
 			// Player
+			playerController = playerControls;
+
 			player = new Player(PxTransform(PxVec3(-5.0f, 0.5f, -17.0f)));
 			player->Name("Player");
 			///PxMaterial* playerMaterial = GetPhysics()->createMaterial(0.1f, 0.1f, 0.0f);
@@ -270,15 +299,30 @@ namespace PhysicsEngine
 
 
 			// Enemies
-			chaserEnemy = new Chaser(PxTransform(PxVec3(-10.0f, 1.0f, -40.0f)), PxVec3(1.0f, 2.0f, 1.0f), 2.0f);
-			chaserEnemy->Init();
-			chaserEnemy->SetChaseTarget(player->Get());
-			Add(chaserEnemy);
 
-			heavyEnemy = new Heavy(PxTransform(PxVec3(5.0f, 0.5f, -30.0f)), PxVec3(1.0f, 2.0f, 1.0f), 2.0f);
-			heavyEnemy->Init();
-			heavyEnemy->SetChaseTarget(player->Get());
-			Add(heavyEnemy);
+			/// Chaser Enemies
+			PxVec3 pos = { -20.0f, 1.0f, -60.0f };
+			for (int i = 0; i < 2; i++)
+			{
+				chaserEnemy[i] = new Chaser(PxTransform(PxVec3(pos)), PxVec3(1.0f, 2.0f, 1.0f), 2.0f);
+				chaserEnemy[i]->Init();
+				chaserEnemy[i]->SetChaseTarget(player->Get());
+				Add(chaserEnemy[i]);
+
+				pos.x += 40.0f;
+			}
+
+			/// Heavy Enemies
+			pos = { -50.0f, 0.5f, -30.0f };
+			for (int i = 0; i < 5; i++)
+			{
+				heavyEnemy[i] = new Heavy(PxTransform(PxVec3(pos)), PxVec3(1.0f, 2.0f, 1.0f), 2.0f);
+				heavyEnemy[i]->Init();
+				heavyEnemy[i]->SetChaseTarget(player->Get());
+				Add(heavyEnemy[i]);
+
+				pos.x += 20.0f;
+			}
 			
 
 			// Weapons
@@ -317,6 +361,7 @@ namespace PhysicsEngine
 
 			/// Trigger Object
 			trebuchetTrigger = new Box(PxTransform(PxVec3(0.0f, 2.0f, -10.0f)));
+			trebuchetTrigger->Name("Trebuchet Trigger");
 			trebuchetTrigger->SetTrigger(true);
 			trebuchetTrigger->SetKinematic(true);
 			Add(trebuchetTrigger);
@@ -331,12 +376,31 @@ namespace PhysicsEngine
 			trebuchetBase->Update();
 
 			//Enemy Updates
-			chaserEnemy->Update();
-			heavyEnemy->Update();
+			//for (int i = 0; i < 5; i++)
+			//{
+			//	heavyEnemy[i]->Update();
+
+			//if(i < 2)
+			//	chaserEnemy[i]->Update();
+			//}
 
 			PxVec3 offset = { 0.0f, 1.0f, 1.5f };
-			((PxRigidBody*)handle->Get())->setGlobalPose(PxTransform(((PxRigidBody*)heavyEnemy->Get())->getGlobalPose().p + offset, PxQuat(PxIdentity)));
+			((PxRigidBody*)handle->Get())->setGlobalPose(PxTransform(((PxRigidBody*)heavyEnemy[0]->Get())->getGlobalPose().p + offset, PxQuat(PxIdentity)));
 
+			if (my_callback->playerTrigger)
+				PlayerToTrebuchet();
+
+		}
+
+		// Switch to Trebuchet Controls
+		void PlayerToTrebuchet()
+		{
+			playerController = trebuchetControls;
+
+			player->SetKinematic(true);
+			PxVec3 playerOffset = { 3.0f, 1.0f, 0.0f };
+			((PxRigidBody*)player->Get())->setGlobalPose(PxTransform(((PxRigidBody*)trebuchetBase->Get())->getGlobalPose().p + playerOffset));
+			my_callback->playerTrigger = false;
 		}
 
 		/// An example use of key release handling
@@ -350,5 +414,6 @@ namespace PhysicsEngine
 		{
 			cerr << "I am pressed!" << endl;
 		}
+
 	};
 }

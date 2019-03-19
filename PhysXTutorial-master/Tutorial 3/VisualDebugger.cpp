@@ -177,50 +177,144 @@ namespace VisualDebugger
 	// On Key Press
 	void UserKeyPress(int key)
 	{
-		switch (toupper(key))
+		// Player Movement
+		if (scene->playerController == scene->playerControls)
 		{
-		//implement your own
-		case 'T':
-			scene->chaserEnemy->SetChaseTarget(scene->GetSelectedActor());
-			break;
+			switch (toupper(key))
+			{
+			case 'W':
+				scene->player->forward = true;
+				break;
+			case 'S':
+				scene->player->back = true;
+				break;
+			case 'A':
+				scene->player->left = true;
+				break;
+			case 'D':
+				scene->player->right = true;
+				break;
 
-		case 'R':
-			scene->ExampleKeyPressHandler();
-			break;
-		case 'X':
-			scene->pressed = !scene->pressed;
-			break;
-		default:
-			break;
+			case 'R':
+				scene->ExampleKeyPressHandler();
+				break;
+			case 'X':
+				scene->pressed = !scene->pressed;
+				break;
+			default:
+				break;
+			}
+		}
+
+		// Trebuchet Controls
+		else if (scene->playerController == scene->trebuchetControls)
+		{
+			switch (toupper(key))
+			{
+			case 'A':
+				scene->player->left = true;
+				break;
+			case 'D':
+				scene->player->right = true;
+				break;
+			case 'F':
+				scene->trebuchetBase->Kick();
+				scene->trebuchetJoint->DriveVelocity(-5.0f);
+
+			default:
+				break;
+			}
 		}
 	}
 
 	// On Key Release
 	void UserKeyRelease(int key)
 	{
+		// Player Controls
+		if (scene->playerController == scene->playerControls)
+		{
+			switch (toupper(key))
+			{
+				//implement your own
+			case 'W':
+				scene->player->forward = false;
+				break;
+			case 'S':
+				scene->player->back = false;
+				break;
+			case 'A':
+				scene->player->left = false;
+				break;
+			case 'D':
+				scene->player->right = false;
+				break;
+
+			case 'R':
+				scene->ExampleKeyReleaseHandler();
+				break;
+			default:
+				break;
+			}
+		}
+
+		// Trebuchet Controls
+		else if (scene->playerController == scene->trebuchetControls)
+		{
+			switch (toupper(key))
+			{
+			case 'A':
+				scene->trebuchetBase->left = false;
+				break;
+			case 'D':
+				scene->trebuchetBase->right = false;
+				break;
+
+			case 'R':
+				scene->ExampleKeyReleaseHandler();
+				break;
+			default:
+				break;
+			}
+		}
+	}
+
+	// Force Keys
+	void ForceInput(int key)
+	{
+		if (!scene->GetSelectedActor())
+			return;
+
 		switch (toupper(key))
 		{
-		//implement your own
-		case 'W':
-			scene->player->forward = false;
+		// Force controls on the selected actor
+		case 'I': //forward
+
+			if (scene->GetSelectedActor()->getName() == "Ball")
+			{
+				scene->GetSelectedActor()->addForce(PxVec3(0, 0, -1) * gForceStrengthBall, PxForceMode::eIMPULSE);
+			}
+			else
+			{
+				scene->GetSelectedActor()->addForce(PxVec3(0, 0, -1)*gForceStrength);
+			}
+
 			break;
-		case 'S':
-			scene->player->back = false;
+		case 'K': //backward
+			scene->GetSelectedActor()->addForce(PxVec3(0,0,1)*gForceStrength);
 			break;
-		case 'A':
-			scene->player->left = false;
+		case 'J': //left
+			scene->GetSelectedActor()->addForce(PxVec3(-1,0,0)*gForceStrength);
 			break;
-		case 'D':
-			scene->player->right = false;
+		case 'L': //right
+			scene->GetSelectedActor()->addForce(PxVec3(1,0,0)*gForceStrength);
 			break;
-		case 'F':
-			scene->trebuchetBase->Kick();
-			scene->trebuchetJoint->DriveVelocity(-5.0f);
+		case 'U': //up
+			scene->GetSelectedActor()->addForce(PxVec3(0,1, -1)*gForceStrengthBall, PxForceMode::eIMPULSE);
+			break;
+		case 'M': //down
+			scene->GetSelectedActor()->addForce(PxVec3(0,-1,0)*gForceStrength);
 			break;
 
-		case 'R':
-			scene->ExampleKeyReleaseHandler();
-			break;
 		default:
 			break;
 		}
@@ -258,61 +352,6 @@ namespace VisualDebugger
 		}
 	}
 
-	// Force Keys
-	void ForceInput(int key)
-	{
-		if (!scene->GetSelectedActor())
-			return;
-
-		switch (toupper(key))
-		{
-		// Player Movement
-		case 'W':
-			scene->player->forward = true;
-			break;
-		case 'S':
-			scene->player->back = true;
-			break;
-		case 'A':
-			scene->player->left = true;
-			break;
-		case 'D':
-			scene->player->right = true;
-			break;
-
-		// Force controls on the selected actor
-		case 'I': //forward
-
-			if (scene->GetSelectedActor()->getName() == "Ball")
-			{
-				scene->GetSelectedActor()->addForce(PxVec3(0, 0, -1) * gForceStrengthBall, PxForceMode::eIMPULSE);
-			}
-			else
-			{
-				scene->GetSelectedActor()->addForce(PxVec3(0, 0, -1)*gForceStrength);
-			}
-
-			break;
-		case 'K': //backward
-			scene->GetSelectedActor()->addForce(PxVec3(0,0,1)*gForceStrength);
-			break;
-		case 'J': //left
-			scene->GetSelectedActor()->addForce(PxVec3(-1,0,0)*gForceStrength);
-			break;
-		case 'L': //right
-			scene->GetSelectedActor()->addForce(PxVec3(1,0,0)*gForceStrength);
-			break;
-		case 'U': //up
-			scene->GetSelectedActor()->addForce(PxVec3(0,1, -1)*gForceStrengthBall, PxForceMode::eIMPULSE);
-			break;
-		case 'M': //down
-			scene->GetSelectedActor()->addForce(PxVec3(0,-1,0)*gForceStrength);
-			break;
-
-		default:
-			break;
-		}
-	}
 
 	///handle special keys
 	void KeySpecial(int key, int x, int y)

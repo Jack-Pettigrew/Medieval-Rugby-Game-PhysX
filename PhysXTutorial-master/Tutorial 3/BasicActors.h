@@ -90,6 +90,11 @@ namespace PhysicsEngine
 			
 			CreateShape(PxBoxGeometry(dimensions), density);
 
+			// CollisionShape (1)
+			CreateShape(PxBoxGeometry(dimensions), density);
+			GetShape(1)->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
+			GetShape(1)->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
+			
 		}
 
 		// Player Update
@@ -324,6 +329,10 @@ namespace PhysicsEngine
 
 	class TrebuchetBase : public DynamicActor
 	{
+	private:
+		
+		float turnForce = 20.0f;
+
 	public:
 		PxVec3 position, ballOffset = { -0.3f, -0.5f, -3.5f };
 		PxRigidBody* ballTarget;
@@ -331,6 +340,8 @@ namespace PhysicsEngine
 
 		float kickLength = 55.0f;
 		float kickHeight = 80.0f;
+
+		bool left = false, right = false;
 
 		TrebuchetBase(const PxTransform& pose = PxTransform(PxIdentity), PxReal density = PxReal(1.0f))
 			: DynamicActor(pose)
@@ -344,6 +355,12 @@ namespace PhysicsEngine
 		void Update()
 		{
 			PxVec3 position = ((PxRigidBody*)this->Get())->getGlobalPose().p;
+
+			if (left)
+				((PxRigidBody*)this->Get())->addTorque(PxVec3(0.0f, -1.0f, 0.0f) * turnForce);
+			else if(right)
+				((PxRigidBody*)this->Get())->addTorque(PxVec3(0.0f, 1.0f, 0.0f) * turnForce);
+
 
 			// Ball follow Trebuchet
 			if (ballTarget != nullptr && follow)
