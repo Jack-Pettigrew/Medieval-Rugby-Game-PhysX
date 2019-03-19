@@ -215,6 +215,8 @@ namespace VisualDebugger
 			break;
 		case 'F':
 			scene->trebuchetBase->Kick();
+			scene->trebuchetJoint->DriveVelocity(-5.0f);
+			break;
 
 		case 'R':
 			scene->ExampleKeyReleaseHandler();

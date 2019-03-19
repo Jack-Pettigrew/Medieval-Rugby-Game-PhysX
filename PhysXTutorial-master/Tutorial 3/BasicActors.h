@@ -66,13 +66,15 @@ namespace PhysicsEngine
 	{
 	private:
 			
+		PxRigidBody* ballTarget;
 		float maxSpeed = 19.0f;
 		float speed = 50.0f;
+		PxVec3 ballOffset = { -3.0f, -0.5f, 0.0f };
 
 	public:
 
 		bool forward = false, back = false, left = false, right = false;
-		bool done = false;
+		bool follow = true, done = false;
 
 		Player(const PxTransform& pose = PxTransform(PxIdentity), PxVec3 dimensions = PxVec3(1.0f, 2.0f, 1.0f), PxReal density = 2.0f)
 			: DynamicActor(pose)
@@ -95,6 +97,12 @@ namespace PhysicsEngine
 		{
 
 			Movement();
+
+			PxVec3 position = ((PxRigidBody*)this->Get())->getGlobalPose().p;
+
+			// Ball follow Trebuchet
+			if (ballTarget != nullptr && follow)
+				ballTarget->setGlobalPose(PxTransform(position - ballOffset, PxQuat(PxIdentity)));
 		
 		}
 
@@ -117,10 +125,10 @@ namespace PhysicsEngine
 
 		}
 
-		// Custom Player Render
-		void Render()
+		// Set Ball Follow Target
+		void SetBallTarget(PxRigidBody* ball)
 		{
-
+			ballTarget = ball;
 		}
 	};
 
@@ -317,7 +325,7 @@ namespace PhysicsEngine
 	class TrebuchetBase : public DynamicActor
 	{
 	public:
-		PxVec3 position, ballOffset = { -0.5f, -2.0f, -2.0f };
+		PxVec3 position, ballOffset = { -0.3f, -0.5f, -3.5f };
 		PxRigidBody* ballTarget;
 		bool follow = true;
 
@@ -351,6 +359,8 @@ namespace PhysicsEngine
 				return;
 
 			follow = false;
+
+			ballTarget->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, false);
 
 			ballTarget = nullptr;
 		}
