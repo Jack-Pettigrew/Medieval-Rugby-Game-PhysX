@@ -215,6 +215,8 @@ namespace PhysicsEngine
 		Sphere* weaponHead;
 		Box* trebuchetTrigger;
 		Bleachers* bleachers;
+		RotatingObstacle* rotatingObstacle[3];
+		Box* obstacleStands[3];
 
 
 		// Simulation Callback
@@ -230,7 +232,7 @@ namespace PhysicsEngine
 		Enemy *heavyEnemy[5], *chaserEnemy[2];
 		TrebuchetBase* trebuchetBase;
 		TrebuchetArm* trebuchetArm;
-		RevoluteJoint* weaponJoint,* trebuchetJoint;
+		RevoluteJoint* weaponJoint,* trebuchetJoint, *obstacleJoint[3];
 
 		PlayerController playerController; 
 
@@ -291,6 +293,7 @@ namespace PhysicsEngine
 			PxMaterial* ballMaterial = GetPhysics()->createMaterial(0.2f, 0.5f, 1.0f);
 			ball->Material(ballMaterial);
 			((PxRigidBody*)ball->Get())->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, true);
+			ball->GetShape()->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
 			((PxRigidBody*)ball->Get())->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
 			Add(ball);
 
@@ -298,7 +301,7 @@ namespace PhysicsEngine
 			// Player
 			playerController = playerControls;
 
-			player = new Player(PxTransform(PxVec3(-5.0f, 0.5f, -17.0f)));
+			player = new Player(PxTransform(PxVec3(-5.0f, 0.5f, 100.0f)));
 			player->Name("Player");
 			player->Color(PxVec3(200.0f / 255.f, 50.0f / 255.f, 200.0f / 255.f));
 			player->SetBallTarget(((PxRigidBody*)ball->Get()));
@@ -373,6 +376,25 @@ namespace PhysicsEngine
 			trebuchetTrigger->SetKinematic(true);
 			Add(trebuchetTrigger);
 
+
+			// Obstacles
+			PxVec3 obstacleOffset = { -30.0f, 0.5f, 50.0f };
+			for (int i = 0; i < 3; i++)
+			{
+				obstacleStands[i] = new Box(PxTransform(obstacleOffset));
+				obstacleStands[i]->Name("Obstacle Stand");
+				obstacleStands[i]->SetKinematic(true);
+				Add(obstacleStands[i]);
+
+				rotatingObstacle[i] = new RotatingObstacle(PxTransform(PxVec3(0.0f, 6.0f, 0.0f)));
+				rotatingObstacle[i]->Name("Rotating Obstacle");
+				Add(rotatingObstacle[i]);
+
+				obstacleJoint[i] = new RevoluteJoint(obstacleStands[i], PxTransform(PxVec3(0.0f, 2.0f, 0.0f), PxQuat(PxReal(PxPi / 2), PxVec3(0.0f, 0.0f, 1.0f))), rotatingObstacle[i], PxTransform(PxVec3(0.0f, 0.0f, 0.0f)));
+
+				obstacleJoint[i]->DriveVelocity(1.0f);
+
+			}
 		}
 
 		// Custom update function
@@ -383,13 +405,13 @@ namespace PhysicsEngine
 			trebuchetBase->Update();
 
 			//Enemy Updates
-			//for (int i = 0; i < 5; i++)
-			//{
-			//	heavyEnemy[i]->Update();
+			for (int i = 0; i < 5; i++)
+			{
+				heavyEnemy[i]->Update();
 
-			//if(i < 2)
-			//	chaserEnemy[i]->Update();
-			//}
+			if(i < 2)
+				chaserEnemy[i]->Update();
+			}
 
 			PxVec3 offset = { 0.0f, 1.0f, 1.5f };
 			((PxRigidBody*)handle->Get())->setGlobalPose(PxTransform(((PxRigidBody*)heavyEnemy[0]->Get())->getGlobalPose().p + offset, PxQuat(PxIdentity)));
@@ -412,6 +434,7 @@ namespace PhysicsEngine
 			player->SetBallTarget(nullptr);
 			PxVec3 ballOffset = { 0.1f, 0.0f, 7.5f };
 			((PxRigidBody*)ball->Get())->setGlobalPose(PxTransform(((PxRigidBody*)trebuchetBase->Get())->getGlobalPose().p + ballOffset));
+			ball->GetShape()->setFlag(PxShapeFlag::eSIMULATION_SHAPE, true);
 		}
 
 		/// An example use of key release handling

@@ -226,7 +226,7 @@ namespace PhysicsEngine
 			CreateShape(PxBoxGeometry(dimensions), density);
 			this->Name("Chaser");
 
-			maxSpeed = 25.0f;
+			maxSpeed = 22.0f;
 			speed = 100.0f;
 		}
 	
@@ -276,6 +276,7 @@ namespace PhysicsEngine
 		}
 	};
 
+	// Heavy Enemy Class
 	class Heavy : public Enemy
 	{
 	public:
@@ -310,6 +311,7 @@ namespace PhysicsEngine
 
 	};
 
+	// Weapon Class
 	class MorningStar : public DynamicActor
 	{
 	public:
@@ -327,6 +329,7 @@ namespace PhysicsEngine
 
 	};
 
+	// Trebuchet Component Class
 	class TrebuchetBase : public DynamicActor
 	{
 	private:
@@ -394,6 +397,7 @@ namespace PhysicsEngine
 		}
 	};
 
+	// Trebuchet Component Class
 	class TrebuchetArm : public DynamicActor
 	{
 	public:
@@ -447,6 +451,7 @@ namespace PhysicsEngine
 		}
 	};
 
+	// Bleachers Class
 	class Bleachers : public DynamicActor
 	{
 	public:
@@ -495,6 +500,21 @@ namespace PhysicsEngine
 			
 			CreateShape(PxBoxGeometry(PxVec3(0.5f, 4.0f, 400.0f)), density);
 			GetShape(11)->setLocalPose(PxTransform(PxVec3(-94.0f, 0.0f, 0.0f)));
+			
+		}
+	};
+
+	// RotatingObstacle Class
+	class RotatingObstacle : public DynamicActor
+	{
+	public:
+
+		RotatingObstacle(const PxTransform& pose = PxTransform(PxIdentity), PxReal density = 1.0f)
+			: DynamicActor(pose)
+		{
+
+			CreateShape(PxBoxGeometry(PxVec3(1.0, 14.0f, 1.0f)), density);
+			CreateShape(PxBoxGeometry(PxVec3(1.0f, 1.0f, 14.0f)), density);
 			
 		}
 	};
