@@ -211,10 +211,10 @@ namespace PhysicsEngine
 		// Private Game Objects
 		Plane* plane;
 		Box* handle;
-		Capsule* ball;
 		Goal* goal;
 		Sphere* weaponHead;
 		Box* trebuchetTrigger;
+		Bleachers* bleachers;
 
 
 		// Simulation Callback
@@ -226,6 +226,7 @@ namespace PhysicsEngine
 
 		// Public Game Objects
 		Player *player;
+		Capsule* ball;
 		Enemy *heavyEnemy[5], *chaserEnemy[2];
 		TrebuchetBase* trebuchetBase;
 		TrebuchetArm* trebuchetArm;
@@ -263,7 +264,7 @@ namespace PhysicsEngine
 
 			// Plane Setup
 			plane = new Plane();
-			plane->Color(PxVec3(100.0f / 255.f, 210.0f / 255.f, 100.0f / 255.f));
+			plane->Color(PxVec3(50.0f / 255.f, 210.0f / 255.f, 50.0f / 255.f));
 			plane->Name("Pitch");
 			PxMaterial* planeMaterial = GetPhysics()->createMaterial(0.2f, 0.2f, 0.1f);
 			plane->Material(planeMaterial);
@@ -275,6 +276,13 @@ namespace PhysicsEngine
 			///((PxRigidBody*)goal->Get())->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, true);
 			Add(goal);
 
+
+			// Bleachers
+			bleachers = new Bleachers(PxTransform(PxVec3(0.0f, 1.0f, -200.0f)));
+			bleachers->Color(PxVec3(50.0f / 255.0f, 50.0f / 255.0f, 50.0f / 255.0f));
+			bleachers->Name("Right Bleachers");
+			bleachers->SetKinematic(true);
+			Add(bleachers);
 
 			// Ball Setup
 			ball = new Capsule(PxTransform(PxVec3(-4.0f, 5.0f, -2.0f), PxQuat(PxIdentity)), PxVec2(0.5f, 0.5f), 2.0f);
@@ -292,8 +300,7 @@ namespace PhysicsEngine
 
 			player = new Player(PxTransform(PxVec3(-5.0f, 0.5f, -17.0f)));
 			player->Name("Player");
-			///PxMaterial* playerMaterial = GetPhysics()->createMaterial(0.1f, 0.1f, 0.0f);
-			///player->Material(playerMaterial);
+			player->Color(PxVec3(200.0f / 255.f, 50.0f / 255.f, 200.0f / 255.f));
 			player->SetBallTarget(((PxRigidBody*)ball->Get()));
 			Add(player);
 
@@ -350,17 +357,17 @@ namespace PhysicsEngine
 			Add(trebuchetBase);
 
 			/// Arm
-			trebuchetArm = new TrebuchetArm(PxTransform(((PxRigidBody*)trebuchetBase->Get())->getGlobalPose().p, PxQuat(PxPi / 2, PxVec3(1.0f, 0.0f, 0.0f))));
+			trebuchetArm = new TrebuchetArm(PxTransform(((PxRigidBody*)trebuchetBase->Get())->getGlobalPose().p));
 			Add(trebuchetArm);
 
 			/// Joint
-			trebuchetJoint = new RevoluteJoint(trebuchetBase, PxTransform(PxVec3(0.0f, 0.0f, 0.0f), PxQuat(PxReal(2 * PxPi), PxVec3(1.0f, 0.0f, 0.0f))), trebuchetArm, PxTransform(PxVec3(0.0f, -0.3f, -2.5f)));
+			trebuchetJoint = new RevoluteJoint(trebuchetBase, PxTransform(PxVec3(0.0f, 1.0f, 1.0f), PxQuat(PxReal(2 * PxPi), PxVec3(1.0f, 0.0f, 0.0f))), trebuchetArm, PxTransform(PxVec3(0.0f, -0.3f, -2.5f)));
+
 			trebuchetJoint->SetLimitsByDegrees(0.0f, 180.0f);
-			((PxRevoluteJoint*)trebuchetJoint->Get())->setRevoluteJointFlag(PxRevoluteJointFlag::eLIMIT_ENABLED, true);
 			trebuchetJoint->Get()->setConstraintFlag(PxConstraintFlag::eVISUALIZATION, true);
 
 			/// Trigger Object
-			trebuchetTrigger = new Box(PxTransform(PxVec3(0.0f, 2.0f, -10.0f)));
+			trebuchetTrigger = new Box(PxTransform(((PxRigidBody*)trebuchetBase->Get())->getGlobalPose().p + PxVec3(0.0f, 0.0f, 10.0f)), PxVec3(100.0f, 0.5f, 0.5f));
 			trebuchetTrigger->Name("Trebuchet Trigger");
 			trebuchetTrigger->SetTrigger(true);
 			trebuchetTrigger->SetKinematic(true);
@@ -398,9 +405,13 @@ namespace PhysicsEngine
 			playerController = trebuchetControls;
 
 			player->SetKinematic(true);
-			PxVec3 playerOffset = { 3.0f, 1.0f, 0.0f };
+			PxVec3 playerOffset = { 5.0f, 1.0f, 0.0f };
 			((PxRigidBody*)player->Get())->setGlobalPose(PxTransform(((PxRigidBody*)trebuchetBase->Get())->getGlobalPose().p + playerOffset));
 			my_callback->playerTrigger = false;
+
+			player->SetBallTarget(nullptr);
+			PxVec3 ballOffset = { 0.1f, 0.0f, 7.5f };
+			((PxRigidBody*)ball->Get())->setGlobalPose(PxTransform(((PxRigidBody*)trebuchetBase->Get())->getGlobalPose().p + ballOffset));
 		}
 
 		/// An example use of key release handling

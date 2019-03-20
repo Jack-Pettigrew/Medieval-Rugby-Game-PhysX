@@ -347,8 +347,14 @@ namespace PhysicsEngine
 			: DynamicActor(pose)
 		{
 
-			CreateShape(PxBoxGeometry(PxVec3(0.5f, 0.1f, 1.0f)), density);
+			CreateShape(PxBoxGeometry(PxVec3(3.0f, 0.4f, 1.0f)), density);
 			this->Name("Trebuchet Base");
+
+			CreateShape(PxBoxGeometry(PxVec3(0.2f, 1.0f, 2.0f)), density);
+			GetShape(1)->setLocalPose(PxTransform(PxVec3(3.0f, 0.0f, 0.0f)));
+
+			CreateShape(PxBoxGeometry(PxVec3(0.2f, 1.0f, 2.0f)), density);
+			GetShape(2)->setLocalPose(PxTransform(PxVec3(-3.0f, 0.0f, 0.0f)));
 
 		}
 
@@ -400,6 +406,10 @@ namespace PhysicsEngine
 			CreateShape(PxBoxGeometry(PxVec3(1.0f, 0.1f, 1.0f)), density);
 
 			GetShape(1)->setLocalPose(PxTransform(PxVec3(0.0f, 0.0f, 3.5f)));
+
+			// Angle Barrier
+			CreateShape(PxBoxGeometry(PxVec3(1.0f, 0.5f, 0.1f)), density);
+			GetShape(2)->setLocalPose(PxTransform(PxVec3(0.0f, 0.5f, 5.0f), PxQuat(PxPi / 4, PxVec3(1.0f, 0.0f, 0.0f))));
 		}
 
 	};
@@ -420,17 +430,72 @@ namespace PhysicsEngine
 			CreateShape(PxBoxGeometry(PxVec3(0.5f, 5.0f, 0.5f)), density);
 			
 			// Post Arms
-			CreateShape(PxBoxGeometry(PxVec3(5.0f, 0.5f, 0.5f)), density);
+			CreateShape(PxBoxGeometry(PxVec3(10.0f, 0.5f, 0.5f)), density);
 			GetShape(1)->setLocalPose(PxTransform(PxVec3(0.0f, 5.0f, 0.0f), PxQuat(PxIdentity)));
 
 			// Post Left
-			CreateShape(PxBoxGeometry(PxVec3(0.5f, 3.0f, 0.5f)), density);
-			GetShape(2)->setLocalPose(PxTransform(PxVec3(5.0f, 7.5f, 0.0f), PxQuat(PxIdentity)));
+			CreateShape(PxBoxGeometry(PxVec3(0.5f, 6.0f, 0.5f)), density);
+			GetShape(2)->setLocalPose(PxTransform(PxVec3(9.5f, 11.0f, 0.0f), PxQuat(PxIdentity)));
 
 			// Post Right
-			CreateShape(PxBoxGeometry(PxVec3(0.5f, 3.0f, 0.5f)), density);
-			GetShape(3)->setLocalPose(PxTransform(PxVec3(-5.0f, 7.5f, 0.0f), PxQuat(PxIdentity)));
+			CreateShape(PxBoxGeometry(PxVec3(0.5f, 6.0f, 0.5f)), density);
+			GetShape(3)->setLocalPose(PxTransform(PxVec3(-9.5f, 11.0f, 0.0f), PxQuat(PxIdentity)));
 
+			// Stand
+			CreateShape(PxBoxGeometry(PxVec3(2.0f, 2.0f, 2.0f)), density);
+			GetShape(4)->setLocalPose(PxTransform(PxVec3(0.0f, -3.0f, 0.0f)));
+		}
+	};
+
+	class Bleachers : public DynamicActor
+	{
+	public:
+		Bleachers(const PxTransform& pose = PxTransform(PxIdentity), PxReal density = 100.0f)
+			: DynamicActor(pose)
+		{
+			Init(density);
+		}
+
+		void Init(PxReal density)
+		{
+			// Right
+			CreateShape(PxBoxGeometry(PxVec3(6.0f, 2.0f, 400.0f)), density);
+			GetShape(0)->setLocalPose(PxTransform(PxVec3(100.0f, 0.0f, 0.0f)));
+
+			CreateShape(PxBoxGeometry(PxVec3(6.0f, 2.0f, 400.0f)), density);
+			GetShape(1)->setLocalPose(PxTransform(PxVec3(105.0f, 3.5f, 0.0f)));
+			
+			CreateShape(PxBoxGeometry(PxVec3(6.0f, 2.0f, 400.0f)), density);
+			GetShape(2)->setLocalPose(PxTransform(PxVec3(110.0f, 7.0f, 0.0f)));
+			
+			CreateShape(PxBoxGeometry(PxVec3(6.0f, 2.0f, 400.0f)), density);
+			GetShape(3)->setLocalPose(PxTransform(PxVec3(115.0f, 10.5f, 0.0f)));
+			
+			CreateShape(PxBoxGeometry(PxVec3(6.0f, 2.0f, 400.0f)), density);
+			GetShape(4)->setLocalPose(PxTransform(PxVec3(120.0f, 14.0f, 0.0f)));
+			
+			CreateShape(PxBoxGeometry(PxVec3(0.5f, 4.0f, 400.0f)), density);
+			GetShape(5)->setLocalPose(PxTransform(PxVec3(94.0f, 0.0f, 0.0f)));
+			
+			// Left
+			CreateShape(PxBoxGeometry(PxVec3(6.0f, 2.0f, 400.0f)), density);
+			GetShape(6)->setLocalPose(PxTransform(PxVec3(-100.0f, 0.0f, 0.0f)));
+
+			CreateShape(PxBoxGeometry(PxVec3(6.0f, 2.0f, 400.0f)), density);
+			GetShape(7)->setLocalPose(PxTransform(PxVec3(-105.0f, 3.5f, 0.0f)));
+			
+			CreateShape(PxBoxGeometry(PxVec3(6.0f, 2.0f, 400.0f)), density);
+			GetShape(8)->setLocalPose(PxTransform(PxVec3(-110.0f, 7.0f, 0.0f)));
+			
+			CreateShape(PxBoxGeometry(PxVec3(6.0f, 2.0f, 400.0f)), density);
+			GetShape(9)->setLocalPose(PxTransform(PxVec3(-115.0f, 10.5f, 0.0f)));
+			
+			CreateShape(PxBoxGeometry(PxVec3(6.0f, 2.0f, 400.0f)), density);
+			GetShape(10)->setLocalPose(PxTransform(PxVec3(-120.0f, 14.0f, 0.0f)));
+			
+			CreateShape(PxBoxGeometry(PxVec3(0.5f, 4.0f, 400.0f)), density);
+			GetShape(11)->setLocalPose(PxTransform(PxVec3(-94.0f, 0.0f, 0.0f)));
+			
 		}
 	};
 

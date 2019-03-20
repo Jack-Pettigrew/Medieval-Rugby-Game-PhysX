@@ -62,7 +62,7 @@ namespace VisualDebugger
 		Renderer::InitWindow(window_name, width, height);
 		Renderer::Init();
 
-		camera = new Camera(PxVec3(0.0f, 40.0f, 40.0f), PxVec3(0.f , -0.5f, -1.0f), 40.0f);
+		camera = new Camera(PxVec3(0.0f, 40.0f, 50.0f), PxVec3(0.f , -0.4f, -1.0f), 40.0f);
 		//camera = new Camera(PxVec3(0.0f, 5.0f, 15.0f), PxVec3(0.f, 0.0f, -1.0f), 5.f);
 
 		//initialise HUD
@@ -218,8 +218,11 @@ namespace VisualDebugger
 				scene->player->right = true;
 				break;
 			case 'F':
+				((PxRigidBody*)scene->ball->Get())->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, false);
 				scene->trebuchetBase->Kick();
 				scene->trebuchetJoint->DriveVelocity(-5.0f);
+
+				break;
 
 			default:
 				break;
