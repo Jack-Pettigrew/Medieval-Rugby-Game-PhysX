@@ -209,6 +209,11 @@ namespace PhysicsEngine
 
 		}
 
+		virtual void SetSpeed()
+		{
+
+		}
+
 	};
 
 	// Chaser Enemy Class
@@ -226,7 +231,7 @@ namespace PhysicsEngine
 			CreateShape(PxBoxGeometry(dimensions), density);
 			this->Name("Chaser");
 
-			maxSpeed = 22.0f;
+			maxSpeed = 20.0f;
 			speed = 100.0f;
 		}
 	
@@ -242,7 +247,7 @@ namespace PhysicsEngine
 
 			///printf("Chaser Movement called!\n");
 
-			if (targetToChase == NULL)
+			if (targetToChase == nullptr)
 				return;
 
 			PxVec3 a = ((PxRigidActor*)this->Get())->getGlobalPose().p;
@@ -257,6 +262,8 @@ namespace PhysicsEngine
 		// Chaser Attack
 		void Attack()
 		{
+			if (!targetToChase)
+				return;
 			
 			PxVec3 a = ((PxRigidActor*)this->Get())->getGlobalPose().p;
 			PxVec3 b = targetToChase->getGlobalPose().p;
@@ -300,6 +307,9 @@ namespace PhysicsEngine
 		void Movement()
 		{
 			///printf("Heavy Movement called!\n");
+
+			if (!targetToChase)
+				return;
 
 			PxVec3 c = ((PxRigidActor*)this->Get())->getGlobalPose().p;
 			PxVec3 d = targetToChase->getGlobalPose().p;
@@ -504,12 +514,54 @@ namespace PhysicsEngine
 		}
 	};
 
+	class Wall : public DynamicActor
+	{
+	public:
+		Wall(const PxTransform &pose = PxTransform(PxIdentity), PxVec3 wallSize = PxVec3(0.5f, 0.5f, 0.5f), PxReal density = 1.0f)
+			: DynamicActor(pose)
+		{
+			CreateShape(PxBoxGeometry(wallSize), density);
+		}
+
+		void ChangeWallSize(PxVec3 newWallSize)
+		{
+			GetShape(0)->setGeometry(PxBoxGeometry(newWallSize));
+		}
+	};
+
+	class Castle : public DynamicActor
+	{
+	public:
+
+		Castle(const PxTransform& pose = PxTransform(PxIdentity), PxReal density = 1.0f)
+			: DynamicActor(pose)
+		{
+			PxVec3 castlePos = { -120.0f, 50.0f, 0.0f };
+			for (int i = 0; i < 25; i++)
+			{
+				CreateShape(PxBoxGeometry(3.0f, 4.0f, 1.0), density);
+				GetShape(i)->setLocalPose(PxTransform(castlePos));
+				castlePos.x += 10.0f;
+			}
+
+			CreateShape(PxBoxGeometry(PxVec3(50.0f, 50.0f, 1.0f)), density);
+			GetShape(25)->setLocalPose(PxTransform(PxVec3(-75.0f, 0.0f, 0.0f)));
+
+			CreateShape(PxBoxGeometry(PxVec3(50.0f, 50.0f, 1.0f)), density);
+			GetShape(26)->setLocalPose(PxTransform(PxVec3(75.0f, 0.0f, 0.0f)));
+
+			CreateShape(PxBoxGeometry(PxVec3(50.0f, 2.0f, 1.0f)), density);
+			GetShape(27)->setLocalPose(PxTransform(PxVec3(0.0f, 48.0f, 0.0f)));
+
+		}
+	};
+
 	// RotatingObstacle Class
 	class RotatingObstacle : public DynamicActor
 	{
 	public:
 
-		RotatingObstacle(const PxTransform& pose = PxTransform(PxIdentity), PxReal density = 1.0f)
+		RotatingObstacle(const PxTransform& pose = PxTransform(PxIdentity), PxReal density = 20000.0f)
 			: DynamicActor(pose)
 		{
 
