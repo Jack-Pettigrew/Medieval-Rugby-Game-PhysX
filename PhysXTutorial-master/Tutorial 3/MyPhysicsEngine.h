@@ -472,7 +472,62 @@ namespace PhysicsEngine
 
 
 			// Destructable Flags + Cloths
+			
+			int x = rand() % 100 + -75;
+			int z = rand() % -25 + -350.0f;
+			PxVec3 pillarPos = { (float)x, 1.0f, (float)z };
 
+			/// Destructable Pillars
+			int index = 0;
+			for (int i = 0; i < 8; i++)
+			{
+				if (index > 4)
+					break;
+
+				if (i == 7)
+				{
+					x = rand() % 100 + -75;
+					z = rand() % -25 + -350.0f;
+					pillarPos = { (float)x, 1.0f, (float)z };
+					i = 0; 
+					index++;
+				}
+
+				Box *pillar = new Box(PxTransform(pillarPos), PxVec3(1.0f, 1.0f, 1.0f), 5.0f);
+				Add(pillar);
+
+				pillarPos.y += 2.0f;
+			}
+
+			// Cloth
+			PxClothParticle vertices[] = {
+				PxClothParticle(PxVec3(0.0f, 0.0f, 0.0f), 0.0f),
+				PxClothParticle(PxVec3(0.0f, 1.0f, 0.0f), 1.0f),
+				PxClothParticle(PxVec3(1.0f, 0.0f, 0.0f), 1.0f),
+				PxClothParticle(PxVec3(1.0f, 1.0f, 0.0f), 1.0f)
+			};
+
+			PxU32 primitives[] = { 0, 1, 3, 2 };
+
+			PxClothMeshDesc meshDesc;
+			meshDesc.points.data = vertices;
+			meshDesc.points.count = 4;
+			meshDesc.points.stride = sizeof(PxClothParticle);
+
+			meshDesc.invMasses.data = &vertices->invWeight;
+			meshDesc.invMasses.count = 4;
+			meshDesc.invMasses.stride = sizeof(PxClothParticle);
+
+			meshDesc.quads.data = primitives;
+			meshDesc.quads.count = 1;
+			meshDesc.quads.stride = sizeof(PxU32) * 4;
+
+			PxPhysics* physics = GetPhysics();
+			PxClothFabric* fabric = PxClothFabricCreate(*physics, meshDesc, PxVec3(0, -1, 0));
+
+			PxTransform clothPose = PxTransform(PxVec3(0.0f, 10.0f, -375.0f));
+			PxCloth* cloth = physics->createCloth(clothPose, *fabric, vertices, PxClothFlags());
+			Add((Actor*)cloth);
 		}
 
 		// Custom update function

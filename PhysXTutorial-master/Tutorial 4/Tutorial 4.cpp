@@ -5,14 +5,14 @@ using namespace std;
 
 int main()
 {
-	try 
-	{ 
-		VisualDebugger::Init("Tutorial 4", 800, 800); 
+	try
+	{
+		VisualDebugger::Init("PET15593452 - Physics Simulation - Medievil Rugby!", 1280, 720);
 	}
-	catch (Exception exc) 
-	{ 
+	catch (Exception exc)
+	{
 		cerr << exc.what() << endl;
-		return 0; 
+		return 0;
 	}
 
 	VisualDebugger::Start();

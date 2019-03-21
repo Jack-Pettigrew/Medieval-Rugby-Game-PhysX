@@ -1,5 +1,6 @@
 #pragma once
 
+#include "PxRigidBody.h"
 #include "foundation/PxTransform.h"
 #include "foundation/PxMat33.h"
 
@@ -13,7 +14,9 @@ namespace VisualDebugger
 	private:
 		PxVec3	eye, eye_init;
 		PxVec3	dir, dir_init;
+		PxVec3 viewOffset;
 		PxReal speed, speed_init;
+		PxRigidBody* playerTarget;
 
 	public:
 		///constructor
@@ -21,6 +24,11 @@ namespace VisualDebugger
 
 		///reset view
 		void Reset();
+
+		///target for camera to follow
+		void SetFollowTarget(PxRigidBody * target);
+
+		void FollowUpdate(PxReal delta_time);
 
 		///handle camera motion
 		void Motion(int dx, int dy, PxReal delta_time);
@@ -54,5 +62,6 @@ namespace VisualDebugger
 
 		///move camera down
 		void MoveDown(PxReal delta_time);
+
 	};
 }

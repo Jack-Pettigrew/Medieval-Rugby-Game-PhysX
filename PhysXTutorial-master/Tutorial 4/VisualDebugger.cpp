@@ -39,8 +39,9 @@ namespace VisualDebugger
 	///simulation objects
 	Camera* camera;
 	PhysicsEngine::MyScene* scene;
-	PxReal delta_time = 1.f/60.f;
-	PxReal gForceStrength = 20;
+	PxReal delta_time = 1.f / 60.f;
+	PxReal gForceStrength = 500.0f;
+	PxReal gForceStrengthBall = 10.0f;
 	RenderMode render_mode = NORMAL;
 	const int MAX_KEYS = 256;
 	bool key_state[MAX_KEYS];
@@ -56,12 +57,13 @@ namespace VisualDebugger
 		scene->Init();
 
 		///Init renderer
-		Renderer::BackgroundColor(PxVec3(150.f/255.f,150.f/255.f,150.f/255.f));
+		Renderer::BackgroundColor(PxVec3(150.f / 255.f, 150.f / 255.f, 150.f / 255.f));
 		Renderer::SetRenderDetail(40);
 		Renderer::InitWindow(window_name, width, height);
 		Renderer::Init();
 
-		camera = new Camera(PxVec3(0.0f, 5.0f, 15.0f), PxVec3(0.f,-.1f,-1.f), 5.f);
+		camera = new Camera(PxVec3(0.0f, 40.0f, 50.0f), PxVec3(0.f, -0.4f, -1.0f), 40.0f);
+		//camera = new Camera(PxVec3(0.0f, 5.0f, 15.0f), PxVec3(0.f, 0.0f, -1.0f), 5.f);
 
 		//initialise HUD
 		HUDInit();
@@ -83,7 +85,7 @@ namespace VisualDebugger
 		atexit(exitCallback);
 
 		//init motion callback
-		motionCallback(0,0);
+		motionCallback(0, 0);
 	}
 
 	void HUDInit()
@@ -117,13 +119,13 @@ namespace VisualDebugger
 		//set font size for all screens
 		hud.FontSize(0.018f);
 		//set font color for all screens
-		hud.Color(PxVec3(0.f,0.f,0.f));
+		hud.Color(PxVec3(0.f, 0.f, 0.f));
 	}
 
 	//Start the main loop
 	void Start()
-	{ 
-		glutMainLoop(); 
+	{
+		glutMainLoop();
 	}
 
 	//Render the scene and perform a single simulation step
@@ -166,30 +168,156 @@ namespace VisualDebugger
 
 		//perform a single simulation step
 		scene->Update(delta_time);
+
+		camera->SetFollowTarget(((PxRigidBody*)scene->player->Get()));
+
+		camera->FollowUpdate(delta_time);
 	}
 
-	//user defined keyboard handlers
+	// On Key Press
 	void UserKeyPress(int key)
 	{
-		switch (toupper(key))
+		// Player Movement
+		if (scene->playerController == scene->playerControls)
 		{
-		//implement your own
-		case 'R':
-			scene->ExampleKeyPressHandler();
-			break;
-		default:
-			break;
+			switch (toupper(key))
+			{
+			case 'W':
+				scene->player->forward = true;
+				break;
+			case 'S':
+				scene->player->back = true;
+				break;
+			case 'A':
+				scene->player->left = true;
+				break;
+			case 'D':
+				scene->player->right = true;
+				break;
+
+			case 'R':
+				scene->ExampleKeyPressHandler();
+				break;
+			case 'X':
+				scene->pressed = !scene->pressed;
+				break;
+			default:
+				break;
+			}
+		}
+
+		// Trebuchet Controls
+		else if (scene->playerController == scene->trebuchetControls)
+		{
+			switch (toupper(key))
+			{
+			case 'A':
+				scene->player->left = true;
+				break;
+			case 'D':
+				scene->player->right = true;
+				break;
+			case 'F':
+				((PxRigidBody*)scene->ball->Get())->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, false);
+				scene->trebuchetBase->Kick();
+				scene->trebuchetJoint->DriveVelocity(-5.0f);
+
+				break;
+
+			default:
+				break;
+			}
 		}
 	}
 
+	// On Key Release
 	void UserKeyRelease(int key)
 	{
+		// Player Controls
+		if (scene->playerController == scene->playerControls)
+		{
+			switch (toupper(key))
+			{
+				//implement your own
+			case 'W':
+				scene->player->forward = false;
+				break;
+			case 'S':
+				scene->player->back = false;
+				break;
+			case 'A':
+				scene->player->left = false;
+				break;
+			case 'D':
+				scene->player->right = false;
+				break;
+
+			case 'R':
+				scene->ExampleKeyReleaseHandler();
+				break;
+			default:
+				break;
+			}
+		}
+
+		// Trebuchet Controls
+		else if (scene->playerController == scene->trebuchetControls)
+		{
+			switch (toupper(key))
+			{
+			case 'A':
+				scene->trebuchetBase->left = false;
+				break;
+			case 'D':
+				scene->trebuchetBase->right = false;
+				break;
+
+			case 'R':
+				scene->ExampleKeyReleaseHandler();
+				break;
+			default:
+				break;
+			}
+		}
+	}
+
+	// Force Keys
+	void ForceInput(int key)
+	{
+		if (!scene->GetSelectedActor())
+			return;
+
 		switch (toupper(key))
 		{
-		//implement your own
-		case 'R':
-			scene->ExampleKeyReleaseHandler();
+			// Force controls on the selected actor
+		case 'I': //forward
+
+			if (scene->GetSelectedActor()->getName() == "Ball")
+			{
+				scene->GetSelectedActor()->addForce(PxVec3(0, 0, -1) * gForceStrengthBall, PxForceMode::eIMPULSE);
+			}
+			else
+			{
+				scene->GetSelectedActor()->addForce(PxVec3(0, 0, -1)*gForceStrength);
+			}
+
 			break;
+		case 'K': //backward
+			scene->GetSelectedActor()->addForce(PxVec3(0, 0, 1)*gForceStrength);
+			break;
+		case 'J': //left
+			scene->GetSelectedActor()->addForce(PxVec3(-1, 0, 0)*gForceStrength);
+			break;
+		case 'L': //right
+			scene->GetSelectedActor()->addForce(PxVec3(1, 0, 0)*gForceStrength);
+			break;
+		case 'U': //up
+			scene->GetSelectedActor()->addForce(PxVec3(0, 1, -1)*gForceStrengthBall, PxForceMode::eIMPULSE);
+			break;
+		case 'M': //down
+			scene->GetSelectedActor()->addForce(PxVec3(0, -1, 0)*gForceStrength);
+			break;
+
 		default:
 			break;
 		}
@@ -199,21 +327,21 @@ namespace VisualDebugger
 	{
 	}
 
-	//handle camera control keys
+	// Camera Controls
 	void CameraInput(int key)
 	{
 		switch (toupper(key))
 		{
-		case 'W':
+		case '8':
 			camera->MoveForward(delta_time);
 			break;
-		case 'S':
+		case '5':
 			camera->MoveBackward(delta_time);
 			break;
-		case 'A':
+		case '4':
 			camera->MoveLeft(delta_time);
 			break;
-		case 'D':
+		case '6':
 			camera->MoveRight(delta_time);
 			break;
 		case 'Q':
@@ -227,37 +355,6 @@ namespace VisualDebugger
 		}
 	}
 
-	//handle force control keys
-	void ForceInput(int key)
-	{
-		if (!scene->GetSelectedActor())
-			return;
-
-		switch (toupper(key))
-		{
-			// Force controls on the selected actor
-		case 'I': //forward
-			scene->GetSelectedActor()->addForce(PxVec3(0,0,-1)*gForceStrength);
-			break;
-		case 'K': //backward
-			scene->GetSelectedActor()->addForce(PxVec3(0,0,1)*gForceStrength);
-			break;
-		case 'J': //left
-			scene->GetSelectedActor()->addForce(PxVec3(-1,0,0)*gForceStrength);
-			break;
-		case 'L': //right
-			scene->GetSelectedActor()->addForce(PxVec3(1,0,0)*gForceStrength);
-			break;
-		case 'U': //up
-			scene->GetSelectedActor()->addForce(PxVec3(0,1,0)*gForceStrength);
-			break;
-		case 'M': //down
-			scene->GetSelectedActor()->addForce(PxVec3(0,-1,0)*gForceStrength);
-			break;
-		default:
-			break;
-		}
-	}
 
 	///handle special keys
 	void KeySpecial(int key, int x, int y)
@@ -282,11 +379,11 @@ namespace VisualDebugger
 			//reset camera view
 			camera->Reset();
 			break;
-
 			//simulation control
 		case GLUT_KEY_F9:
 			//select next actor
 			scene->SelectNextActor();
+			camera->SetFollowTarget(scene->GetSelectedActor());
 			break;
 		case GLUT_KEY_F10:
 			//toggle scene pause
