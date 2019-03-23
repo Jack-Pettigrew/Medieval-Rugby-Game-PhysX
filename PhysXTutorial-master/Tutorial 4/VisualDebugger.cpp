@@ -221,6 +221,7 @@ namespace VisualDebugger
 				((PxRigidBody*)scene->ball->Get())->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, false);
 				scene->trebuchetBase->Kick();
 				scene->trebuchetJoint->DriveVelocity(-4.75);
+				scene->kickTime = true;
 
 				break;
 

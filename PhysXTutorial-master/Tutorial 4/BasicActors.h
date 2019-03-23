@@ -85,8 +85,7 @@ namespace PhysicsEngine
 		{
 			
 		}
-	};
-
+	};
 	// Player Class
 	class Player : public DynamicActor
 	{
@@ -247,7 +246,7 @@ namespace PhysicsEngine
 	{
 	private:
 
-		float attackForce = 200.0f;
+		float attackForce = 400.0f;
 
 	public:
 
@@ -474,12 +473,12 @@ namespace PhysicsEngine
 			GetShape(1)->setLocalPose(PxTransform(PxVec3(0.0f, 5.0f, 0.0f), PxQuat(PxIdentity)));
 
 			// Post Left
-			CreateShape(PxBoxGeometry(PxVec3(0.5f, 6.0f, 0.5f)), density);
-			GetShape(2)->setLocalPose(PxTransform(PxVec3(9.5f, 11.0f, 0.0f), PxQuat(PxIdentity)));
+			CreateShape(PxBoxGeometry(PxVec3(0.5f, 8.0f, 0.5f)), density);
+			GetShape(2)->setLocalPose(PxTransform(PxVec3(9.5f, 13.0f, 0.0f), PxQuat(PxIdentity)));
 
 			// Post Right
-			CreateShape(PxBoxGeometry(PxVec3(0.5f, 6.0f, 0.5f)), density);
-			GetShape(3)->setLocalPose(PxTransform(PxVec3(-9.5f, 11.0f, 0.0f), PxQuat(PxIdentity)));
+			CreateShape(PxBoxGeometry(PxVec3(0.5f, 8.0f, 0.5f)), density);
+			GetShape(3)->setLocalPose(PxTransform(PxVec3(-9.5f, 13.0f, 0.0f), PxQuat(PxIdentity)));
 
 			// Stand
 			CreateShape(PxBoxGeometry(PxVec3(2.0f, 2.0f, 2.0f)), density);

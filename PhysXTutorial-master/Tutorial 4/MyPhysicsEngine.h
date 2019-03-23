@@ -94,9 +94,9 @@ namespace PhysicsEngine
 	public:
 
 		//an example variable that will be checked in the main simulation loop
-		bool trigger, playerTrigger, scoreTrigger;
+		bool trigger, playerTrigger, scoreTrigger, restart;
 
-		MySimulationEventCallback() : trigger(false), playerTrigger(false), scoreTrigger(false) {}
+		MySimulationEventCallback() : trigger(false), playerTrigger(false), scoreTrigger(false), restart(false) {}
 
 		///Method called when the contact with the trigger object is detected.
 		virtual void onTrigger(PxTriggerPair* pairs, PxU32 count)
@@ -120,13 +120,19 @@ namespace PhysicsEngine
 						if (otherActorName == "Player" && triggerActorName == "Trebuchet Trigger")
 						{
 							playerTrigger = true;
-							printf("Trebuchet Trigger Called\n");
+							printf("Trebuchet Trigger Called! \n");
 						}
 
 						if (otherActorName == "Chaser" && triggerActorName == "Player")
 						{
-							printf("COLLISION PLAYER TRIGGER\n");
+							printf("Hit by Chaser! \n");
+							restart = true;
+						}
 
+						if (otherActorName == "Head" && triggerActorName == "Player")
+						{
+							printf("Hit by Heavy! \n");
+							restart = true;
 						}
 
 						if (otherActorName == "Ball" && triggerActorName == "Score Trigger")
@@ -238,10 +244,12 @@ namespace PhysicsEngine
 		Cloth* cloth[4];
 
 		// Timer Instance
-		SZ_ChronoTimer chronoTimer;
+		SZ_ChronoTimer chronoBall, chronoRestart;
 
 		// Simulation Callback
 		MySimulationEventCallback* my_callback;
+		const float BALL_TIMER_CONST = 400000, RESTART_TIMER_CONST = 100000;
+		float ballTimer = BALL_TIMER_CONST, restartTimer = RESTART_TIMER_CONST;
 
 	public:
 
@@ -257,6 +265,7 @@ namespace PhysicsEngine
 
 		PlayerController playerController;
 
+		bool kickTime = false;
 		bool pressed = false;
 
 		///specify your custom filter shader here
@@ -288,19 +297,19 @@ namespace PhysicsEngine
 			plane = new Plane();
 			plane->Color(PxVec3(50.0f / 255.f, 210.0f / 255.f, 50.0f / 255.f));
 			plane->Name("Pitch");
-			PxMaterial* planeMaterial = GetPhysics()->createMaterial(0.2f, 0.2f, 0.1f);
+			PxMaterial* planeMaterial = GetPhysics()->createMaterial(0.2f, 0.25f, 0.1f);
 			plane->Material(planeMaterial);
 			Add(plane);
 
 
 			// Goal Setup
-			goal = new Goal(PxTransform(PxVec3(0.0f, 5.0f, -400.0f)));
+			goal = new Goal(PxTransform(PxVec3(0.0f, 5.0f, -410.0f)));
 			///((PxRigidBody*)goal->Get())->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, true);
 			Add(goal);
 
 			/// Score Trigger
-			scoreTrigger = new Box(PxTransform(((PxRigidBody*)goal->Get())->getGlobalPose().p + PxVec3(0.0f, 95.0f, -0.5f)), PxVec3(10.0f, 100.0f, 0.01f));
-			scoreTrigger->Color(PxVec3(0.0f, 0.0f, 0.0f));
+			scoreTrigger = new Box(PxTransform(((PxRigidBody*)goal->Get())->getGlobalPose().p + PxVec3(0.0f, 13.0f, -0.5f)), PxVec3(10.0f, 9.0f, 0.01f));
+			scoreTrigger->Color(PxVec3(0.5f, 0.5f, 0.5f));
 			scoreTrigger->Name("Score Trigger");
 			scoreTrigger->SetKinematic(true);
 			scoreTrigger->SetTrigger(true);
@@ -318,7 +327,7 @@ namespace PhysicsEngine
 			ball->Color(color_palette[2]);
 			ball->Name("Ball");
 			PxMaterial* ballMaterial = GetPhysics()->createMaterial(0.2f, 0.5f, 1.25f);
-			//ball->Material(ballMaterial);
+			ball->Material(ballMaterial);
 			((PxRigidBody*)ball->Get())->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, true);
 
 			// Simulation Flag acting as Collision Filter 
@@ -333,7 +342,7 @@ namespace PhysicsEngine
 			// Player
 			playerController = playerControls;
 
-			player = new Player(PxTransform(PxVec3(-5.0f, 0.5f, -300.0f))); //125.0f
+			player = new Player(PxTransform(PxVec3(-5.0f, 0.5f, 125.0f))); //125.0f
 			player->Name("Player");
 			player->Color(PxVec3(200.0f / 255.f, 50.0f / 255.f, 200.0f / 255.f));
 			player->SetBallTarget(((PxRigidBody*)ball->Get()));
@@ -380,7 +389,9 @@ namespace PhysicsEngine
 
 				/// Head
 				weaponHead[i] = new Sphere(PxTransform(PxVec3(0.0f, 6.0f, 0.0f)), 1.0f, 100.0f);
+				weaponHead[i]->Name("Head");
 				weaponHead[i]->Material(CreateMaterial(0.5f, 0.5f, 2.0f));
+				weaponHead[i]->CreateShape(PxSphereGeometry(1.0f), 0.0001f);
 				Add(weaponHead[i]);
 
 				/// Joint
@@ -557,10 +568,29 @@ namespace PhysicsEngine
 			player->Update();
 			trebuchetBase->Update();
 
+			///printf("Timer: %f \n", ballTimer);
+			///printf("Timer: %f \n", ballTimer);
+
 			// Timer Checking
-			///chronoTimer.getChronoTime();
+			if (kickTime)
+			{
+				chronoBall.resetChronoTimer();
+				ballTimer -= chronoBall.getChronoTime();
+			}
 
+			if (ballTimer <= 0.0f)
+			{
+				trebuchetJoint->DriveVelocity(40.0f);
 
+				PxVec3 ballOffset = { 0.1f, 0.0f, 7.5f };
+				((PxRigidBody*)ball->Get())->setGlobalPose(PxTransform(((PxRigidBody*)trebuchetBase->Get())->getGlobalPose().p + ballOffset));
+				((PxRigidBody*)ball->Get())->setLinearVelocity(PxVec3(0.0f, 0.0f, 0.0f));
+				((PxRigidBody*)ball->Get())->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, true);
+
+				kickTime = false;
+				ballTimer = BALL_TIMER_CONST;
+			}
+				
 			//Enemy Updates
 			for (int i = 0; i < 4; i++)
 			{
@@ -583,6 +613,20 @@ namespace PhysicsEngine
 
 			if (my_callback->scoreTrigger)
 				GoalTrigger();
+
+			if (my_callback->restart && playerController != PlayerController::trebuchetControls)
+			{
+				chronoRestart.resetChronoTimer();
+				restartTimer -= chronoRestart.getChronoTime();
+				
+				if (restartTimer <= 0.0f)
+				{
+					restartTimer = RESTART_TIMER_CONST;
+					this->Reset();
+				}
+			}
+
+			///printf("Reset Timer: %f \n", restartTimer);
 		}
 
 		// Switch to Trebuchet Controls
@@ -596,6 +640,7 @@ namespace PhysicsEngine
 			my_callback->playerTrigger = false;
 
 			player->SetBallTarget(nullptr);
+			((PxRigidBody*)ball->Get())->setLinearVelocity(PxVec3(0.0f, 0.0f, 0.0f));
 			PxVec3 ballOffset = { 0.1f, 0.0f, 7.5f };
 			((PxRigidBody*)ball->Get())->setGlobalPose(PxTransform(((PxRigidBody*)trebuchetBase->Get())->getGlobalPose().p + ballOffset)); /// 90 DEGREE ROTATION: PxQuat(PxPi / 2, PxVec3(0.0f, 1.0f, 0.0f))
 
