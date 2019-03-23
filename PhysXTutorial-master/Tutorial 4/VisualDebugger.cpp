@@ -220,7 +220,7 @@ namespace VisualDebugger
 			case 'F':
 				((PxRigidBody*)scene->ball->Get())->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, false);
 				scene->trebuchetBase->Kick();
-				scene->trebuchetJoint->DriveVelocity(-5.0f);
+				scene->trebuchetJoint->DriveVelocity(-4.75);
 
 				break;
 

@@ -58,6 +58,35 @@ namespace PhysicsEngine
 		}
 	};
 
+	// Ball Class
+	class Ball : public DynamicActor
+	{
+	public:
+		Ball(const PxTransform& pose = PxTransform(PxIdentity), PxReal radius = 1.f, PxReal density = 1.f)
+			:DynamicActor(pose)
+		{
+			// Ball Shape
+			CreateShape(PxSphereGeometry(radius), density);		   /// 0
+			CreateShape(PxSphereGeometry(radius * 0.75), density); /// 1
+			GetShape(1)->setLocalPose(PxTransform(PxVec3(0.5f, 0.0f, 0.0f)));
+			CreateShape(PxSphereGeometry(radius * 0.75), density); /// 2
+			GetShape(2)->setLocalPose(PxTransform(PxVec3(-0.5f, 0.0f, 0.0f)));
+			CreateShape(PxSphereGeometry(radius * 0.50), density); /// 3
+			GetShape(3)->setLocalPose(PxTransform(PxVec3(1.0f, 0.0f, 0.0f)));
+			CreateShape(PxSphereGeometry(radius * 0.50), density); /// 4
+			GetShape(4)->setLocalPose(PxTransform(PxVec3(-1.0f, 0.0f, 0.0f)));
+			CreateShape(PxSphereGeometry(radius * 0.25), density); /// 5
+			GetShape(5)->setLocalPose(PxTransform(PxVec3(1.4f, 0.0f, 0.0f)));
+			CreateShape(PxSphereGeometry(radius * 0.25), density); /// 6 
+			GetShape(6)->setLocalPose(PxTransform(PxVec3(-1.4f, 0.0f, 0.0f)));
+		}
+
+		void Update()
+		{
+			
+		}
+	};
+
 	// Player Class
 	class Player : public DynamicActor
 	{

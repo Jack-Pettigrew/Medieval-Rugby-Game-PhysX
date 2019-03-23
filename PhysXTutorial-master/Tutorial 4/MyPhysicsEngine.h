@@ -1,6 +1,7 @@
 #pragma once
 
 #include "BasicActors.h"
+#include "SZ_ChronoTimer.h"
 #include <iostream>
 #include <iomanip>
 #include <time.h>
@@ -234,7 +235,10 @@ namespace PhysicsEngine
 		Box* obstacleStands[8];
 		Wall* wall[6], *wall2;
 		Castle* castle;
-		Cloth* cloth;
+		Cloth* cloth[4];
+
+		// Timer Instance
+		SZ_ChronoTimer chronoTimer;
 
 		// Simulation Callback
 		MySimulationEventCallback* my_callback;
@@ -245,7 +249,7 @@ namespace PhysicsEngine
 
 		// Public Game Objects
 		Player *player;
-		Capsule* ball;
+		Ball* ball;
 		Enemy *heavyEnemy[4], *chaserEnemy[2];
 		TrebuchetBase* trebuchetBase;
 		TrebuchetArm* trebuchetArm;
@@ -280,7 +284,6 @@ namespace PhysicsEngine
 			my_callback = new MySimulationEventCallback();
 			px_scene->setSimulationEventCallback(my_callback);
 
-
 			// Plane Setup
 			plane = new Plane();
 			plane->Color(PxVec3(50.0f / 255.f, 210.0f / 255.f, 50.0f / 255.f));
@@ -296,7 +299,7 @@ namespace PhysicsEngine
 			Add(goal);
 
 			/// Score Trigger
-			scoreTrigger = new Box(PxTransform(((PxRigidBody*)goal->Get())->getGlobalPose().p + PxVec3(0.0f, 95.0f, -0.5f)), PxVec3(10.0f, 100.0f, 0.5f));
+			scoreTrigger = new Box(PxTransform(((PxRigidBody*)goal->Get())->getGlobalPose().p + PxVec3(0.0f, 95.0f, -0.5f)), PxVec3(10.0f, 100.0f, 0.01f));
 			scoreTrigger->Color(PxVec3(0.0f, 0.0f, 0.0f));
 			scoreTrigger->Name("Score Trigger");
 			scoreTrigger->SetKinematic(true);
@@ -311,13 +314,18 @@ namespace PhysicsEngine
 			Add(bleachers);
 
 			// Ball Setup
-			ball = new Capsule(PxTransform(PxVec3(-4.0f, 5.0f, -2.0f), PxQuat(PxIdentity)), PxVec2(0.5f, 0.5f), 2.0f);
+			ball = new Ball(PxTransform(PxVec3(-4.0f, 5.0f, -2.0f)), 1.0f);
 			ball->Color(color_palette[2]);
 			ball->Name("Ball");
-			PxMaterial* ballMaterial = GetPhysics()->createMaterial(0.2f, 0.5f, 1.0f);
-			ball->Material(ballMaterial);
+			PxMaterial* ballMaterial = GetPhysics()->createMaterial(0.2f, 0.5f, 1.25f);
+			//ball->Material(ballMaterial);
 			((PxRigidBody*)ball->Get())->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, true);
-			ball->GetShape()->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
+
+			// Simulation Flag acting as Collision Filter 
+			for each (PxShape* shape in ball->GetShapes())					/// Ball does not need to interact with world at this time!
+				shape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
+
+			// Accurate Collision Detection for ball
 			((PxRigidBody*)ball->Get())->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
 			Add(ball);
 
@@ -378,6 +386,12 @@ namespace PhysicsEngine
 				/// Joint
 				weaponJoint[i] = new RevoluteJoint(handle[i], PxTransform(PxVec3(0.0f, 1.0f, 0.0f), PxQuat(PxReal(PxPi / 2), PxVec3(0.0f, 0.0f, 1.0f))), weaponHead[i], PxTransform(PxVec3(0.0f, 1.0f, 4.0f)));
 				weaponJoint[i]->DriveVelocity(20.0f);
+
+				/// Weapon Aggregate
+				PxAggregate* weaponAggregate = GetPhysics()->createAggregate(2, false);
+				weaponAggregate->addActor(*handle[i]->Get());
+				weaponAggregate->addActor(*weaponHead[i]->Get());
+
 			}
 
 
@@ -406,6 +420,13 @@ namespace PhysicsEngine
 			trebuchetTrigger->SetKinematic(true);
 			Add(trebuchetTrigger);
 
+			/// Trebuchet Aggregate (collection of shapes creating a single entity)
+			PxU32 numActors = 2;
+			bool selfCollisions = true;
+
+			PxAggregate* trebuchetAggregate = GetPhysics()->createAggregate(numActors, selfCollisions);
+			trebuchetAggregate->addActor(*trebuchetBase->Get());
+			trebuchetAggregate->addActor(*trebuchetArm->Get());
 
 			// Obstacles
 			PxVec3 obstacleOffset = { -30.0f, 0.5f, 50.0f };
@@ -506,15 +527,27 @@ namespace PhysicsEngine
 			px_scene->setClothInterCollisionDistance(0.5f);
 			px_scene->setClothInterCollisionStiffness(1.0f);
 
-			cloth = new Cloth(PxTransform(PxVec3(25.0f, 49.0f, -397.0f)), PxVec2(25.0f, 45.0f), PxU32(10), PxU32(10), true);
-			((PxCloth*)cloth->Get())->setClothFlags(PxClothFlag::eGPU | PxClothFlag::eSCENE_COLLISION | PxClothFlag::eSWEPT_CONTACT);		// Swept = Computationally Expensive
-			((PxCloth*)cloth->Get())->setName("Tappastry");
-			cloth->Color(PxVec3(200.0f / 255.0f, 150.0f / 255.0f, 50.0f / 255.0f));
-			((PxCloth*)cloth->Get())->setExternalAcceleration(PxVec3(5.0f, 0.0f, 5.0f));
-			((PxCloth*)cloth->Get())->setSelfCollisionStiffness(1.0f);
-			((PxCloth*)cloth->Get())->setSelfCollisionDistance(0.1f);
-			Add(cloth);
-			
+			PxVec3 clothOffset = { 25.0f, 49.0f, -397.0f };
+			for (int i = 0; i < 4; i++)
+			{
+
+				cloth[i] = new Cloth(PxTransform(clothOffset), PxVec2(25.0f, 45.0f), PxU32(10), PxU32(10), true);
+				((PxCloth*)cloth[i]->Get())->setClothFlags(PxClothFlag::eGPU | PxClothFlag::eSCENE_COLLISION | PxClothFlag::eSWEPT_CONTACT);		// Swept = Computationally Expensive
+				((PxCloth*)cloth[i]->Get())->setName("Tappastry" + i);
+				cloth[i]->Color(PxVec3(175.0f / 255.0f, 50.0f / 255.0f, 175.0f / 255.0f));
+				((PxCloth*)cloth[i]->Get())->setExternalAcceleration(PxVec3(5.0f, 0.0f, 5.0f));
+				((PxCloth*)cloth[i]->Get())->setSelfCollisionStiffness(1.0f);
+				((PxCloth*)cloth[i]->Get())->setSelfCollisionDistance(0.1f);
+				Add(cloth[i]);
+
+				if (i == 1)
+				{
+					clothOffset.x -= 150.0f;
+					continue;
+				}
+
+				clothOffset.x += 35.0f;
+			}
 		}
 
 		// Custom update function
@@ -523,6 +556,10 @@ namespace PhysicsEngine
 			// Player Update
 			player->Update();
 			trebuchetBase->Update();
+
+			// Timer Checking
+			///chronoTimer.getChronoTime();
+
 
 			//Enemy Updates
 			for (int i = 0; i < 4; i++)
@@ -560,8 +597,11 @@ namespace PhysicsEngine
 
 			player->SetBallTarget(nullptr);
 			PxVec3 ballOffset = { 0.1f, 0.0f, 7.5f };
-			((PxRigidBody*)ball->Get())->setGlobalPose(PxTransform(((PxRigidBody*)trebuchetBase->Get())->getGlobalPose().p + ballOffset));
-			ball->GetShape()->setFlag(PxShapeFlag::eSIMULATION_SHAPE, true);
+			((PxRigidBody*)ball->Get())->setGlobalPose(PxTransform(((PxRigidBody*)trebuchetBase->Get())->getGlobalPose().p + ballOffset)); /// 90 DEGREE ROTATION: PxQuat(PxPi / 2, PxVec3(0.0f, 1.0f, 0.0f))
+
+			// Simulation Flag Active >> Acting as Collision Filter
+			for each (PxShape* shape in ball->GetShapes())					/// Ball needs to interact with world at this time
+				shape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, true);		
 
 			for (int i = 0; i < 5; i++)
 			{
