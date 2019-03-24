@@ -110,7 +110,7 @@ namespace PhysicsEngine
 					//check if eNOTIFY_TOUCH_FOUND trigger
 					if (pairs[i].status & PxPairFlag::eNOTIFY_TOUCH_FOUND)
 					{
-						cerr << "onTrigger::eNOTIFY_TOUCH_FOUND" << endl;
+						//cerr << "onTrigger::eNOTIFY_TOUCH_FOUND" << endl;
 						trigger = true;
 
 						// Player Trigger
@@ -120,31 +120,36 @@ namespace PhysicsEngine
 						if (otherActorName == "Player" && triggerActorName == "Trebuchet Trigger")
 						{
 							playerTrigger = true;
-							printf("Trebuchet Trigger Called! \n");
+							printf("COLLISION: %s triggered %s \n", otherActorName.c_str(), triggerActorName.c_str());
 						}
 
 						if (otherActorName == "Chaser" && triggerActorName == "Player")
 						{
-							printf("Hit by Chaser! \n");
+							printf("COLLISION: %s triggered %s \n RESTARTING GAME...\n", otherActorName.c_str(), triggerActorName.c_str());
 							restart = true;
 						}
 
 						if (otherActorName == "Head" && triggerActorName == "Player")
 						{
-							printf("Hit by Heavy! \n");
+							printf("COLLISION: %s triggered %s \n RESTARTING GAME...\n", otherActorName.c_str(), triggerActorName.c_str());
 							restart = true;
 						}
 
 						if (otherActorName == "Ball" && triggerActorName == "Score Trigger")
 						{
-							printf("Score!!!!!\n");
+							printf("COLLISION: %s triggered %s \n PLAYER SCORED - RELEASING THE CUBES!\n", otherActorName.c_str(), triggerActorName.c_str());
 							scoreTrigger = true;
+						}
+						if (otherActorName == "Arrow" && triggerActorName == "Player")
+						{
+							printf("COLLISION: %s hit and pushed %s \n", otherActorName.c_str(), triggerActorName.c_str());
+							((PxRigidBody*)pairs[i].triggerActor)->addForce(PxVec3(((PxRigidBody*)pairs[i].otherActor)->getLinearVelocity() * 1000.0f));
 						}
 					}
 					//check if eNOTIFY_TOUCH_LOST trigger
 					if (pairs[i].status & PxPairFlag::eNOTIFY_TOUCH_LOST)
 					{
-						cerr << "onTrigger::eNOTIFY_TOUCH_LOST" << endl;
+						//cerr << "onTrigger::eNOTIFY_TOUCH_LOST" << endl;
 						trigger = false;
 
 						// Player Trigger
@@ -158,7 +163,6 @@ namespace PhysicsEngine
 						if (otherActorName == "Ball")
 						{
 							scoreTrigger = false;
-							printf("Disabled Score!\n");
 						}
 					}
 				}
@@ -248,6 +252,7 @@ namespace PhysicsEngine
 
 		// Simulation Callback
 		MySimulationEventCallback* my_callback;
+
 		const float BALL_TIMER_CONST = 400000, RESTART_TIMER_CONST = 100000;
 		float ballTimer = BALL_TIMER_CONST, restartTimer = RESTART_TIMER_CONST;
 
@@ -262,6 +267,8 @@ namespace PhysicsEngine
 		TrebuchetBase* trebuchetBase;
 		TrebuchetArm* trebuchetArm;
 		RevoluteJoint* weaponJoint[4], *trebuchetJoint, *obstacleJoint[8];
+
+		Towers* tower[2];
 
 		PlayerController playerController;
 
@@ -330,11 +337,11 @@ namespace PhysicsEngine
 			ball->Material(ballMaterial);
 			((PxRigidBody*)ball->Get())->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, true);
 
-			// Simulation Flag acting as Collision Filter 
+			/// Simulation Flag acting as Collision Filter 
 			for each (PxShape* shape in ball->GetShapes())					/// Ball does not need to interact with world at this time!
 				shape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
 
-			// Accurate Collision Detection for ball
+			/// Accurate Collision Detection for ball
 			((PxRigidBody*)ball->Get())->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
 			Add(ball);
 
@@ -350,6 +357,8 @@ namespace PhysicsEngine
 
 
 			// Enemies
+#pragma region Enemies Init
+
 
 			/// Chaser Enemies
 			PxVec3 pos = { -20.0f, 1.0f, -60.0f };
@@ -377,12 +386,16 @@ namespace PhysicsEngine
 					pos.x = 50.0f;
 			}
 
+#pragma endregion
 
 			// Weapons
+#pragma region Weapons Init
+
 
 			/// Handle
-			for (int i = 0; i < 5; i++)
+			for (int i = 0; i <= 4; i++)
 			{
+
 				handle[i] = new Box(PxTransform(PxVec3(0.0f, 6.0f, 0.0f)), PxVec3(0.25f, 1.50f, 0.25f), 1.0f);
 				handle[i]->SetKinematic(true);
 				Add(handle[i]);
@@ -405,8 +418,11 @@ namespace PhysicsEngine
 
 			}
 
+#pragma endregion
+
 
 			// Trebuchet
+#pragma region Trebuchet Init
 
 			/// Base
 			PxVec3 trebuchetOffset = { -1.0f, -4.0f, -250.0f };
@@ -424,8 +440,8 @@ namespace PhysicsEngine
 			trebuchetJoint->SetLimitsByDegrees(0.0f, 180.0f);
 			trebuchetJoint->Get()->setConstraintFlag(PxConstraintFlag::eVISUALIZATION, true);
 
-			/// Trigger Object
-			trebuchetTrigger = new Box(PxTransform(((PxRigidBody*)trebuchetBase->Get())->getGlobalPose().p + PxVec3(0.0f, 0.0f, 10.0f)), PxVec3(100.0f, 0.5f, 0.5f));
+			/// Trebuchet Trigger Object
+			trebuchetTrigger = new Box(PxTransform(((PxRigidBody*)trebuchetBase->Get())->getGlobalPose().p + PxVec3(0.0f, -2.40f, 10.0f)), PxVec3(100.0f, 0.5f, 0.5f));
 			trebuchetTrigger->Name("Trebuchet Trigger");
 			trebuchetTrigger->SetTrigger(true);
 			trebuchetTrigger->SetKinematic(true);
@@ -439,7 +455,12 @@ namespace PhysicsEngine
 			trebuchetAggregate->addActor(*trebuchetBase->Get());
 			trebuchetAggregate->addActor(*trebuchetArm->Get());
 
+#pragma endregion
+
+
 			// Obstacles
+#pragma region Obstacles Init
+
 			PxVec3 obstacleOffset = { -30.0f, 0.5f, 50.0f };
 			for (int i = 0; i < 8; i++)
 			{
@@ -470,7 +491,7 @@ namespace PhysicsEngine
 				}
 			}
 
-			// Wall
+			/// Wall
 			wall[0] = new Wall(PxTransform(PxVec3(70.0f, 1.0f, 50.0f)));
 			wall[0]->ChangeWallSize(PxVec3(25.0f, 1.0f, 0.5f));
 			wall[1] = new Wall(PxTransform(PxVec3(-70.0f, 1.0f, 50.0f)));
@@ -494,6 +515,24 @@ namespace PhysicsEngine
 			wall2->ChangeWallSize(PxVec3(25.0f, 1.0f, 0.5f));
 			wall2->SetKinematic(true);
 			Add(wall2);
+			
+			/// Arrow Towers
+			PxVec3 tower1 = { 85.0f, 4.0f, 0.0f }, tower2 = { -85.0f, 4.0f, -100.0f }, temp = tower1;
+			for (int i = 0; i < 2; i++)
+			{
+				tower[i] = new Towers(PxTransform(temp));
+				tower[i]->Color(PxVec3(255.0f / 255.0f, 25.0f / 255.0f, 0.0f));
+				tower[i]->SetPlayerTarget(player);
+				tower[i]->Enabled(true);
+				tower[i]->getArrow()->Name("Arrow");
+				tower[i]->SetKinematic(true);
+				Add(tower[i]);
+				Add(tower[i]->getArrow());
+
+				temp = tower2;
+			}
+
+#pragma endregion
 
 
 			// Castle
@@ -501,11 +540,7 @@ namespace PhysicsEngine
 			castle->SetKinematic(true);
 			Add(castle);
 
-			/// Castle Cloth
-
-
-			// Destructable Flags + Cloths
-
+			// Destructables
 			int x = rand() % 100 + -75;
 			int z = rand() % -25 + -350.0f;
 			PxVec3 pillarPos = { (float)x, 1.0f, (float)z };
@@ -538,6 +573,7 @@ namespace PhysicsEngine
 			px_scene->setClothInterCollisionDistance(0.5f);
 			px_scene->setClothInterCollisionStiffness(1.0f);
 
+			/// Init Cloths
 			PxVec3 clothOffset = { 25.0f, 49.0f, -397.0f };
 			for (int i = 0; i < 4; i++)
 			{
@@ -562,13 +598,32 @@ namespace PhysicsEngine
 		}
 
 		// Custom update function
-		virtual void CustomUpdate()
+		virtual void CustomUpdate(PxReal dt)
 		{
 			// Player Update
 			player->Update();
 			trebuchetBase->Update();
+			for (int i = 0; i < 2; i++)
+			{
+				tower[i]->Update(dt);
+			}
+			
+			//Enemy Updates
+			for (int i = 0; i < 4; i++)
+			{
+				heavyEnemy[i]->Update();
 
-			///printf("Timer: %f \n", ballTimer);
+				if (i < 2)
+					chaserEnemy[i]->Update();
+			}
+
+			// Morning Star Handles
+			PxVec3 offset = { 0.0f, 1.0f, 1.5f };
+			for (int i = 0; i < 5; i++)
+			{
+				((PxRigidBody*)handle[i]->Get())->setGlobalPose(PxTransform(((PxRigidBody*)heavyEnemy[i]->Get())->getGlobalPose().p + offset, PxQuat(PxIdentity)));
+			}
+
 			///printf("Timer: %f \n", ballTimer);
 
 			// Timer Checking
@@ -578,8 +633,12 @@ namespace PhysicsEngine
 				ballTimer -= chronoBall.getChronoTime();
 			}
 
+
+			// Reset Trebuchet on Timer
 			if (ballTimer <= 0.0f)
 			{
+				printf("TREBUCHET: Resetting Trebuchet\n");
+				
 				trebuchetJoint->DriveVelocity(40.0f);
 
 				PxVec3 ballOffset = { 0.1f, 0.0f, 7.5f };
@@ -590,23 +649,8 @@ namespace PhysicsEngine
 				kickTime = false;
 				ballTimer = BALL_TIMER_CONST;
 			}
-				
-			//Enemy Updates
-			for (int i = 0; i < 4; i++)
-			{
-				heavyEnemy[i]->Update();
 
-				if (i < 2)
-					chaserEnemy[i]->Update();
-			}
-
-
-			// Morning Star Handles
-			PxVec3 offset = { 0.0f, 1.0f, 1.5f };
-			for (int i = 0; i < 5; i++)
-			{
-				((PxRigidBody*)handle[i]->Get())->setGlobalPose(PxTransform(((PxRigidBody*)heavyEnemy[i]->Get())->getGlobalPose().p + offset, PxQuat(PxIdentity)));
-			}
+			// Collision Triggers
 
 			if (my_callback->playerTrigger)
 				PlayerToTrebuchet();
@@ -616,6 +660,7 @@ namespace PhysicsEngine
 
 			if (my_callback->restart && playerController != PlayerController::trebuchetControls)
 			{
+				player->done = true;
 				chronoRestart.resetChronoTimer();
 				restartTimer -= chronoRestart.getChronoTime();
 				
@@ -632,13 +677,17 @@ namespace PhysicsEngine
 		// Switch to Trebuchet Controls
 		void PlayerToTrebuchet()
 		{
+			// Change Control Scheme
 			playerController = trebuchetControls;
+			printf("PLAYER CONTROLS: Control scheme to Trebuchet");
 
+			// Setup Player for Trebuchet
 			player->SetKinematic(true);
 			PxVec3 playerOffset = { 5.0f, 1.0f, 0.0f };
 			((PxRigidBody*)player->Get())->setGlobalPose(PxTransform(((PxRigidBody*)trebuchetBase->Get())->getGlobalPose().p + playerOffset));
 			my_callback->playerTrigger = false;
 
+			// Setup Ball for Trebuchet
 			player->SetBallTarget(nullptr);
 			((PxRigidBody*)ball->Get())->setLinearVelocity(PxVec3(0.0f, 0.0f, 0.0f));
 			PxVec3 ballOffset = { 0.1f, 0.0f, 7.5f };
@@ -648,13 +697,24 @@ namespace PhysicsEngine
 			for each (PxShape* shape in ball->GetShapes())					/// Ball needs to interact with world at this time
 				shape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, true);		
 
+			// Disable all Enemies
 			for (int i = 0; i < 5; i++)
 			{
 				heavyEnemy[i]->SetChaseTarget(nullptr);
+				((PxRigidBody*)heavyEnemy[i]->Get())->setLinearVelocity(PxVec3(0.0f, 0.0f, 0.0f));
+				((PxRigidBody*)heavyEnemy[i]->Get())->setGlobalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f)));
 
 				if (i < 2)
+				{
 					chaserEnemy[i]->SetChaseTarget(nullptr);
+					((PxRigidBody*)chaserEnemy[i]->Get())->setLinearVelocity(PxVec3(0.0f, 0.0f, 0.0f));
+					((PxRigidBody*)chaserEnemy[i]->Get())->setGlobalPose(PxTransform(PxVec3(0.0f, 0.0f, 0.0f)));
+
+					tower[i]->Enabled(false);
+				}
 			}
+
+			printf("ENEMIES: Enemies Disabled -> Trebuchet\n");
 		}
 
 		// Goal Score Reaction

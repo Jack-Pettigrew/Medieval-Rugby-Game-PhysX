@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PhysicsEngine.h"
+#include "SZ_ChronoTimer.h"
 #include <iostream>
 #include <iomanip>
 
@@ -85,7 +86,8 @@ namespace PhysicsEngine
 		{
 			
 		}
-	};
+	};
+
 	// Player Class
 	class Player : public DynamicActor
 	{
@@ -373,7 +375,7 @@ namespace PhysicsEngine
 
 	public:
 		PxVec3 position, ballOffset = { -0.3f, -0.5f, -3.5f };
-		PxRigidBody* ballTarget;
+		PxRigidBody* ballTarget = nullptr;
 		bool follow = true;
 
 		float kickLength = 55.0f;
@@ -539,6 +541,7 @@ namespace PhysicsEngine
 		}
 	};
 
+	// Wall Class
 	class Wall : public DynamicActor
 	{
 	public:
@@ -554,6 +557,7 @@ namespace PhysicsEngine
 		}
 	};
 
+	// Castle Class
 	class Castle : public DynamicActor
 	{
 	public:
@@ -578,6 +582,105 @@ namespace PhysicsEngine
 			CreateShape(PxBoxGeometry(PxVec3(50.0f, 2.0f, 1.0f)), density);
 			GetShape(27)->setLocalPose(PxTransform(PxVec3(0.0f, 48.0f, 0.0f)));
 
+		}
+	};
+
+	// Arrow Class
+	class Arrow : public DynamicActor
+	{
+	public:
+		Arrow(const PxTransform& pose = PxTransform(PxIdentity), PxReal density = PxReal(0.1f))
+			: DynamicActor(pose)
+		{
+			CreateShape(PxBoxGeometry(PxVec3(0.5f, 0.5f, 2.0f)), density);
+		}
+	};
+
+	// Tower Class
+	class Towers : public DynamicActor
+	{
+	private:
+		bool enabled = false;	// Enable Arrow Shooting
+
+		// Shooting Arrow Timer
+		const float START_ARROW_TIME = 5.0f;
+		float timer = START_ARROW_TIME;
+		SZ_ChronoTimer arrowTimer;
+
+		// Arrow Object
+		Arrow* arrow;
+		float arrowSpeed = 75.0f;
+
+		// Player Object
+		Player* player;
+
+	public:
+
+		Towers(const PxTransform& pose = PxTransform(PxIdentity), PxReal density = PxReal(5.0f))
+			: DynamicActor(pose)
+		{
+			// Tower Init
+			CreateShape(PxBoxGeometry(PxVec3(5.0f, 3.0f, 5.0f)), density);
+			GetShape(0)->setLocalPose(PxTransform(PxVec3(0.0f, -1.0f, 0.0f)));
+
+			CreateShape(PxBoxGeometry(PxVec3(5.0f, 0.25f, 5.0f)), density);
+			GetShape(1)->setLocalPose(PxTransform(PxVec3(0.0f, 8.0f, 0.0f)));
+
+			// Arrow Init
+			arrow = new Arrow(PxTransform(pose.p + PxVec3(0.0f, 6.0f, 0.0f)));
+		}
+		
+		// Update Method
+		void Update(PxReal dt)
+		{
+			if(enabled && player)
+				Shoot(dt);
+		}
+
+		// Attack Method
+		void Shoot(PxReal dt)
+		{
+
+			timer -= dt;
+			//printf("Arrow Timer: %f \n", timer);
+
+			if (timer <= 0.0f)
+			{
+				// Get direction from tower to player pos
+				PxVec3 playerPos = ((PxRigidBody*)player->Get())->getGlobalPose().p;
+				PxVec3 towerPos = ((PxRigidBody*)this->Get())->getGlobalPose().p;
+				PxVec3 direction = (playerPos - towerPos);
+
+				// Return Arrow to position and Shoot
+				((PxRigidBody*)arrow->Get())->setGlobalPose(PxTransform(towerPos + PxVec3(0.0f, 6.0f, 0.0f)));
+				((PxRigidBody*)arrow->Get())->setLinearVelocity(direction.getNormalized() * arrowSpeed);
+
+				// Reset Timer
+				timer = START_ARROW_TIME;
+			}
+
+		}
+
+		// Enables/Disables Arrow Shooting
+		void Enabled(bool enabled)
+		{
+			this->enabled = enabled;
+		}
+
+		Arrow* getArrow()
+		{
+			return arrow;
+		}
+
+		void SetPlayerTarget(Player* player)
+		{
+			this->player = player;
+		}
+
+		~Towers()
+		{
+			delete arrow; arrow = nullptr;
+			delete this;
 		}
 	};
 

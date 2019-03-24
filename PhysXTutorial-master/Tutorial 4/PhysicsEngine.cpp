@@ -270,7 +270,7 @@ namespace PhysicsEngine
 		if (pause)
 			return;
 
-		CustomUpdate();
+		CustomUpdate(dt);
 
 		px_scene->simulate(dt);
 		px_scene->fetchResults(true);

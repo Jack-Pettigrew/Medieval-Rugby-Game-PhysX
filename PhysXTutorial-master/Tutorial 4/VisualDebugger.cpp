@@ -178,7 +178,7 @@ namespace VisualDebugger
 	void UserKeyPress(int key)
 	{
 		// Player Movement
-		if (scene->playerController == scene->playerControls)
+		if (scene->playerController == scene->playerControls && !scene->player->done)
 		{
 			switch (toupper(key))
 			{
