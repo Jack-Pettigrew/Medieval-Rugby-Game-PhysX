@@ -267,6 +267,7 @@ namespace PhysicsEngine
 
 	void Scene::Update(PxReal dt)
 	{
+
 		if (pause)
 			return;
 

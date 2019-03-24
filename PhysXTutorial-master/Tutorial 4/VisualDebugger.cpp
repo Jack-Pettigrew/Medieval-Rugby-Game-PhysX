@@ -94,6 +94,7 @@ namespace VisualDebugger
 		//add an empty screen
 		hud.AddLine(EMPTY, "");
 		//add a help screen
+		
 		hud.AddLine(HELP, " Simulation");
 		hud.AddLine(HELP, "    F9 - select next actor");
 		hud.AddLine(HELP, "    F10 - pause");
@@ -128,9 +129,21 @@ namespace VisualDebugger
 		glutMainLoop();
 	}
 
+	signed int frame = 0;
+	float timer = 0.0f;
+	float avgFPS = 0.0f;
+
 	//Render the scene and perform a single simulation step
 	void RenderScene()
 	{
+		frame++;
+		timer += delta_time;
+		if (timer >= 1.0f)
+		{
+			avgFPS = (float)frame / timer;
+			printf("\rAverage FPS: %f \n", avgFPS);
+		}
+
 		//handle pressed keys
 		KeyHold();
 
@@ -211,12 +224,6 @@ namespace VisualDebugger
 		{
 			switch (toupper(key))
 			{
-			case 'A':
-				scene->player->left = true;
-				break;
-			case 'D':
-				scene->player->right = true;
-				break;
 			case 'F':
 				((PxRigidBody*)scene->ball->Get())->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, false);
 				scene->trebuchetBase->Kick();

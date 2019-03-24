@@ -248,7 +248,7 @@ namespace PhysicsEngine
 		Cloth* cloth[4];
 
 		// Timer Instance
-		SZ_ChronoTimer chronoBall, chronoRestart;
+		SZ_ChronoTimer chronoBall, chronoRestart, profileMonitor;
 
 		// Simulation Callback
 		MySimulationEventCallback* my_callback;
@@ -292,6 +292,7 @@ namespace PhysicsEngine
 		// Scene Init
 		virtual void CustomInit()
 		{
+
 			SetVisualisation();
 
 			GetMaterial()->setDynamicFriction(.2f);
@@ -349,7 +350,7 @@ namespace PhysicsEngine
 			// Player
 			playerController = playerControls;
 
-			player = new Player(PxTransform(PxVec3(-5.0f, 0.5f, 125.0f))); //125.0f
+			player = new Player(PxTransform(PxVec3(-5.0f, 0.5f, -300.0f))); //125.0f
 			player->Name("Player");
 			player->Color(PxVec3(200.0f / 255.f, 50.0f / 255.f, 200.0f / 255.f));
 			player->SetBallTarget(((PxRigidBody*)ball->Get()));
@@ -541,7 +542,7 @@ namespace PhysicsEngine
 			Add(castle);
 
 			// Destructables
-			int x = rand() % 100 + -75;
+			int x = rand() % 275 + -275;
 			int z = rand() % -25 + -350.0f;
 			PxVec3 pillarPos = { (float)x, 1.0f, (float)z };
 
@@ -549,7 +550,7 @@ namespace PhysicsEngine
 			int index = 0;
 			for (int i = 0; i < 8; i++)
 			{
-				if (index > 4)
+				if (index > 12)
 					break;
 
 				if (i == 7)
@@ -600,6 +601,7 @@ namespace PhysicsEngine
 		// Custom update function
 		virtual void CustomUpdate(PxReal dt)
 		{
+
 			// Player Update
 			player->Update();
 			trebuchetBase->Update();
@@ -653,7 +655,10 @@ namespace PhysicsEngine
 			// Collision Triggers
 
 			if (my_callback->playerTrigger)
+			{
 				PlayerToTrebuchet();
+				my_callback->playerTrigger = false;
+			}
 
 			if (my_callback->scoreTrigger)
 				GoalTrigger();
@@ -679,13 +684,13 @@ namespace PhysicsEngine
 		{
 			// Change Control Scheme
 			playerController = trebuchetControls;
-			printf("PLAYER CONTROLS: Control scheme to Trebuchet");
+			printf("PLAYER CONTROLS: Control scheme to Trebuchet\n");
 
 			// Setup Player for Trebuchet
+			((PxRigidBody*)player->Get())->clearForce();
 			player->SetKinematic(true);
 			PxVec3 playerOffset = { 5.0f, 1.0f, 0.0f };
 			((PxRigidBody*)player->Get())->setGlobalPose(PxTransform(((PxRigidBody*)trebuchetBase->Get())->getGlobalPose().p + playerOffset));
-			my_callback->playerTrigger = false;
 
 			// Setup Ball for Trebuchet
 			player->SetBallTarget(nullptr);
@@ -723,13 +728,13 @@ namespace PhysicsEngine
 			my_callback->scoreTrigger = false;
 
 			// Create Random Balls
-			for (int i = 0; i < 200; i++)
+			for (int i = 0; i < 100; i++)
 			{
 				PxVec3 ballPositions(0.0f, 30.0f, -350.0f);
 
 				Box* box = new Box(PxTransform(ballPositions), PxVec3(1.0f, 1.0f, 1.0f), 100.0f);
 				box->Material(CreateMaterial(0.5f, 0.5f, 1.5f));
-				box->Name("Score Ball");
+				box->Name("Score Ball\n");
 				box->Color(PxVec3(0.7f, 0.7f, 0.2f));
 				Add(box);
 
