@@ -14,6 +14,8 @@ namespace PhysicsEngine
 	static const PxVec3 color_palette[] = { PxVec3(46.f / 255.f,9.f / 255.f,39.f / 255.f),PxVec3(217.f / 255.f,0.f / 255.f,0.f / 255.f),
 		PxVec3(255.f / 255.f,45.f / 255.f,0.f / 255.f),PxVec3(255.f / 255.f,140.f / 255.f,54.f / 255.f),PxVec3(4.f / 255.f,117.f / 255.f,111.f / 255.f) };
 
+	static const PxVec3 scoreColors[] = { PxVec3(0.7f, 0.7f, 0.2f), PxVec3(0.7f, 0.2f, 0.7f), PxVec3(0.2f, 0.7f, 0.7f), PxVec3(0.7f, 0.0f, 1.0f) };
+
 	// Pyramid vertices
 	static PxVec3 pyramid_verts[] = { PxVec3(0,1,0), PxVec3(1,0,0), PxVec3(-1,0,0), PxVec3(0,0,1), PxVec3(0,0,-1) };
 
@@ -245,7 +247,6 @@ namespace PhysicsEngine
 		Box* obstacleStands[8];
 		Wall* wall[6], *wall2;
 		Castle* castle;
-		Cloth* cloth[4];
 		std::vector<Ball*> spawnBalls;
 
 		// Timer Instance
@@ -254,11 +255,12 @@ namespace PhysicsEngine
 		// Simulation Callback
 		MySimulationEventCallback* my_callback;
 
-		const float BALL_TIMER_CONST = 10.0f, RESTART_TIMER_CONST = 3000.0f;
+		const float BALL_TIMER_CONST = 12.0f, RESTART_TIMER_CONST = 3000.0f;
 		float ballTimer = BALL_TIMER_CONST, restartTimer = RESTART_TIMER_CONST;
 
 	public:
 
+		int clothCount = 0;
 		enum PlayerController { playerControls, trebuchetControls };
 
 		// Public Game Objects
@@ -268,9 +270,10 @@ namespace PhysicsEngine
 		TrebuchetBase* trebuchetBase;
 		TrebuchetArm* trebuchetArm;
 		RevoluteJoint* weaponJoint[4], *trebuchetJoint, *obstacleJoint[8];
-
+		Cloth* cloth[4];
 		Towers* tower[2];
 
+		// Player Controls Modifier
 		PlayerController playerController;
 
 		bool kickTime = false;
@@ -335,7 +338,7 @@ namespace PhysicsEngine
 			ball = new Ball(PxTransform(PxVec3(-4.0f, 5.0f, -2.0f)), 1.0f);
 			ball->Color(color_palette[2]);
 			ball->Name("Ball");
-			PxMaterial* ballMaterial = GetPhysics()->createMaterial(0.2f, 0.5f, 1.25f);
+			PxMaterial* ballMaterial = GetPhysics()->createMaterial(0.2f, 0.5f, 1.3f);
 			ball->Material(ballMaterial);
 			((PxRigidBody*)ball->Get())->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, true);
 
@@ -596,6 +599,8 @@ namespace PhysicsEngine
 				}
 
 				clothOffset.x += 35.0f;
+
+				clothCount++;
 			}
 		}
 
@@ -698,7 +703,7 @@ namespace PhysicsEngine
 			// Setup Ball for Trebuchet
 			player->SetBallTarget(nullptr);
 			((PxRigidBody*)ball->Get())->setLinearVelocity(PxVec3(0.0f, 0.0f, 0.0f));
-			PxVec3 ballOffset = { 0.1f, 0.0f, 7.5f };
+			PxVec3 ballOffset = { 0.0f, 0.0f, 7.5f };
 			((PxRigidBody*)ball->Get())->setGlobalPose(PxTransform(((PxRigidBody*)trebuchetBase->Get())->getGlobalPose().p + ballOffset)); /// 90 DEGREE ROTATION: PxQuat(PxPi / 2, PxVec3(0.0f, 1.0f, 0.0f))
 
 			// Simulation Flag Active >> Acting as Collision Filter
@@ -725,38 +730,93 @@ namespace PhysicsEngine
 			printf("ENEMIES: Enemies Disabled -> Trebuchet\n");
 		}
 
+
 		// Goal Score Reaction
 		void GoalTrigger()
 		{
 			my_callback->scoreTrigger = false;
 
+			int colorIndex = 0;
+			PxVec3 ballPositions = { 0.0f, 2.0f, -350.0f };
+
 			// Create Random Balls
 			for (int i = 0; i < 100; i++)
 			{
-				PxVec3 ballPositions(0.0f, 30.0f, -350.0f);
-
 				Box* box = new Box(PxTransform(ballPositions), PxVec3(1.0f, 1.0f, 1.0f), 100.0f);
 				box->Material(CreateMaterial(0.5f, 0.5f, 1.5f));
 				box->Name("Score Ball\n");
-				box->Color(PxVec3(0.7f, 0.7f, 0.2f));
+				box->Color(scoreColors[colorIndex++]);
 				Add(box);
 
+				if (colorIndex > 3)
+					colorIndex = 0;
+
+				if(i % 25 == 0)
+					ballPositions.y += 10.0f;
 			}
+
+			PxVec3 ballPositionsCastle = { -75.0f, 75.0f, -410.0f };
+			// Create Random Balls
+			for (int i = 0; i < 100; i++)
+			{
+				Box* box = new Box(PxTransform(ballPositionsCastle), PxVec3(1.0f, 1.0f, 1.0f), 100.0f);
+				box->Material(CreateMaterial(0.5f, 0.5f, 1.5f));
+				box->Name("Score Ball\n");
+				box->Color(scoreColors[colorIndex++]);
+				Add(box);
+
+				if (colorIndex > 3)
+					colorIndex = 0;
+
+				if (i % 50 == 0)
+					ballPositionsCastle.x = -ballPositionsCastle.x;
+			}
+
 		}
 
 		// Spawn Number of Balls Specified
-		void SpawnBalls(int numberofBalls)
+		void SpawnBalls(int numberofBalls, bool inFormation)
 		{
+			PxVec3 pos = { 0.0f, 20.0f, -50.0f };
+
 			for (int i = 0; i < numberofBalls; i++)
 			{
-				Ball* ball = new Ball(PxTransform(((PxRigidBody*)player->Get())->getGlobalPose().p + PxVec3(0.0f, 20.0f, -50.0f)));
+				if (i % 10 == 0 && inFormation)
+				{
+					pos.y += 5.0f;
+					pos.x = 0.0f;
+				}
+				Ball* ball = new Ball(PxTransform(((PxRigidBody*)player->Get())->getGlobalPose().p + pos));
 				ball->Color(color_palette[2]);
-				ball->Name("Ball" + i);
+				ball->Name("Test Ball" + i);
 				PxMaterial* ballMaterial = GetPhysics()->createMaterial(0.2f, 0.5f, 1.25f);
 				ball->Material(ballMaterial);
 				Add(ball);
 
 				spawnBalls.push_back(ball);
+
+				if(inFormation)
+					pos.x += 5.0f;
+
+			}
+		}
+
+		void SpawnCloth(int numberofCloth)
+		{
+			PxVec3 pos = { -10.0f, 20.0f, -50.0f };
+
+			for (int i = 0; i < numberofCloth; i++)
+			{
+				Cloth* cloth = new Cloth(PxTransform(((PxRigidBody*)player->Get())->getGlobalPose().p + pos), PxVec2(50.0f, 50.0f), PxU32(10), PxU32(10), false);
+				((PxCloth*)cloth->Get())->setClothFlags(PxClothFlag::eGPU | PxClothFlag::eSCENE_COLLISION);
+				((PxCloth*)cloth->Get())->setName("Test Cloth" + i);
+				cloth->Color(PxVec3(200.0f / 255.0f, 175.0f / 255.0f, 50.0f / 255.0f));
+				((PxCloth*)cloth->Get())->setExternalAcceleration(PxVec3(0.25f, 8.0f, -0.5f));
+				((PxCloth*)cloth->Get())->setSelfCollisionStiffness(1.0f);
+				((PxCloth*)cloth->Get())->setSelfCollisionDistance(0.1f);
+				Add(cloth);
+
+				clothCount++;
 			}
 		}
 

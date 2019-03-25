@@ -68,18 +68,12 @@ namespace PhysicsEngine
 		{
 			// Ball Shape
 			CreateShape(PxSphereGeometry(radius), density);		   /// 0
-			CreateShape(PxSphereGeometry(radius * 0.75), density); /// 1
-			GetShape(1)->setLocalPose(PxTransform(PxVec3(0.5f, 0.0f, 0.0f)));
-			CreateShape(PxSphereGeometry(radius * 0.75), density); /// 2
-			GetShape(2)->setLocalPose(PxTransform(PxVec3(-0.5f, 0.0f, 0.0f)));
-			CreateShape(PxSphereGeometry(radius * 0.50), density); /// 3
-			GetShape(3)->setLocalPose(PxTransform(PxVec3(1.0f, 0.0f, 0.0f)));
-			CreateShape(PxSphereGeometry(radius * 0.50), density); /// 4
-			GetShape(4)->setLocalPose(PxTransform(PxVec3(-1.0f, 0.0f, 0.0f)));
-			CreateShape(PxSphereGeometry(radius * 0.25), density); /// 5
-			GetShape(5)->setLocalPose(PxTransform(PxVec3(1.4f, 0.0f, 0.0f)));
-			CreateShape(PxSphereGeometry(radius * 0.25), density); /// 6 
-			GetShape(6)->setLocalPose(PxTransform(PxVec3(-1.4f, 0.0f, 0.0f)));
+			CreateShape(PxCapsuleGeometry(0.75f, 0.65f), density); /// 1
+			CreateShape(PxSphereGeometry(radius * 0.55), density); /// 2
+			GetShape(2)->setLocalPose(PxTransform(PxVec3(1.1f, 0.0f, 0.0f)));
+			CreateShape(PxSphereGeometry(radius * 0.55), density); /// 3
+			GetShape(3)->setLocalPose(PxTransform(PxVec3(-1.1f, 0.0f, 0.0f)));
+
 		}
 
 		void Update()
@@ -858,6 +852,7 @@ namespace PhysicsEngine
 		PxClothMeshDesc mesh_desc;
 
 	public:
+
 		//constructor
 		Cloth(PxTransform pose=PxTransform(PxIdentity), const PxVec2& size=PxVec2(1.f,1.f), PxU32 width=1, PxU32 height=1, bool fix_top = true)
 		{
@@ -920,7 +915,9 @@ namespace PhysicsEngine
 
 		~Cloth()
 		{
+
 			delete (UserData*)actor->userData;		
 		}
 	};
+
 }

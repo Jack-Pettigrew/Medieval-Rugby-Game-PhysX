@@ -123,8 +123,6 @@ namespace VisualDebugger
 		hud.AddLine(PAUSE, "");
 		hud.AddLine(PAUSE, "   Simulation paused. Press F10 to continue.");
 		hud.AddLine(PROFILE, " Medievil Rugby Game Performance");
-		hud.AddLine(PROFILE, "");
-		hud.AddLine(PROFILE, "    Average FPS: ");
 		//set font size for all screens
 		hud.FontSize(0.018f);
 		//set font color for all screens
@@ -138,27 +136,36 @@ namespace VisualDebugger
 	}
 
 	signed int frame = 0;
-	float avgFPS = 0.0f;
-	float sceneUpdateTime = 0;
+	int avgFPS = 0.0f;
+	int sceneUpdateTime = 0;
 	string stringFPS = "    Average FPS: ";
 	string avgRenderUpdate = "    Average Render Update Time: ";
 	string avgSceneUpdate =  "    Average Scene Update Time: ";
-	string dynamicActorCount = "    Number of Dynamic Actors: ";
+	string dynamicActorCount = "    # of Dynamic Actors: ";
+	string sceneClothCount = "    # of Cloth: ";
 
 	// Clears and Rewrites the FPS
 	void RefreshProfileHUD()
 	{
 		hud.Clear(PROFILE);
 		hud.AddLine(PROFILE, " Medievil Rugby Game Performance");
-
 		hud.AddLine(PROFILE, stringFPS);
-
 		hud.AddLine(PROFILE, avgRenderUpdate);
-
 		hud.AddLine(PROFILE, avgSceneUpdate);
+		hud.AddLine(PROFILE, "");
 
-		dynamicActorCount = "    Number of Dynamic Actors: " + std::to_string(PhysicsEngine::DynamicActor::dynamicCount);
+		hud.AddLine(PROFILE, " Objects Stats:");
+		dynamicActorCount = "    # of Dynamic Actors: " + std::to_string(PhysicsEngine::DynamicActor::dynamicCount);
 		hud.AddLine(PROFILE, dynamicActorCount);
+		dynamicActorCount = "    # of Cloth: " + std::to_string(scene->clothCount);
+		hud.AddLine(PROFILE, sceneClothCount);
+		hud.AddLine(PROFILE, "");
+
+		hud.AddLine(PROFILE, " Controls:");
+		hud.AddLine(PROFILE, "    1 : Spawn 1 Ball");
+		hud.AddLine(PROFILE, "    2 : Spawn 100 Balls");
+		hud.AddLine(PROFILE, "    3 : Spawn 100 Balls in formation");
+		hud.AddLine(PROFILE, "    4 : Spawn 200 Balls");
 	}
 
 	// Calculates Average FPS + Render Loop Time
@@ -169,7 +176,7 @@ namespace VisualDebugger
 		{
 			avgFPS = frame;
 			frame = 0;
-
+			
 			stringFPS = "    Average FPS: " + std::to_string(avgFPS);
 			timerFPS.resetChronoTimer();
 		}
@@ -287,10 +294,19 @@ namespace VisualDebugger
 		switch (toupper(key))
 		{
 		case '1':
-			scene->SpawnBalls(1);
+			scene->SpawnBalls(1, false);
 			break;
 		case '2':
-			scene->SpawnBalls(100);
+			scene->SpawnBalls(100, false);
+			break;
+		case '3':
+			scene->SpawnBalls(100, true);
+			break;
+		case '4':
+			scene->SpawnBalls(200, false);
+			break;
+		case '5':
+			scene->SpawnCloth(1);
 			break;
 		}
 	}
