@@ -14,7 +14,7 @@ void SZ_ChronoTimer::resetChronoTimer()
 float SZ_ChronoTimer::getChronoTime()
 {
 	std::chrono::steady_clock::time_point now = Clock::now();
-	auto timeDiff = std::chrono::duration_cast<std::chrono::nanoseconds>(now - startChrono).count();
+	auto timeDiff = std::chrono::duration_cast<std::chrono::milliseconds>(now - startChrono).count();
 	return (float)timeDiff;
 
 }

@@ -73,6 +73,8 @@ namespace PhysicsEngine
 	class DynamicActor : public Actor
 	{
 	public:
+		static int dynamicCount;
+
 		DynamicActor(const PxTransform& pose);
 
 		~DynamicActor();

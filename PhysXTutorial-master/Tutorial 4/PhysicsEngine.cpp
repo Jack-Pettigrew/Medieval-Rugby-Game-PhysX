@@ -182,16 +182,20 @@ namespace PhysicsEngine
 		return name;
 	}
 
+	int DynamicActor::dynamicCount = 0;
+
 	DynamicActor::DynamicActor(const PxTransform& pose) : Actor()
 	{
 		actor = (PxActor*)GetPhysics()->createRigidDynamic(pose);
 		Name("");
+		dynamicCount++;
 	}
 
 	DynamicActor::~DynamicActor()
 	{
 		for (unsigned int i = 0; i < colors.size(); i++)
 			delete (UserData*)GetShape(i)->userData;
+
 	}
 
 	void DynamicActor::CreateShape(const PxGeometry& geometry, PxReal density)

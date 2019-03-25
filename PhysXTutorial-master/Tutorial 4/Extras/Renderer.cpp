@@ -291,6 +291,10 @@ namespace VisualDebugger
 			PxVec3 shadow_color = default_color*0.9;
 			for(PxU32 i=0;i<numActors;i++)
 			{
+				string actorName = actors[i]->getName();
+				if(actorName == "Score Trigger")
+					continue;
+
 				if (actors[i]->isCloth())
 				{
 					RenderCloth((PxCloth*)actors[i]);

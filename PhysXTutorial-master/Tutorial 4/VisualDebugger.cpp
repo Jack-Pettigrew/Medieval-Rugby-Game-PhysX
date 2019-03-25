@@ -1,3 +1,4 @@
+
 #include "VisualDebugger.h"
 #include <vector>
 #include "Extras\Camera.h"
@@ -19,7 +20,8 @@ namespace VisualDebugger
 	{
 		EMPTY = 0,
 		HELP = 1,
-		PAUSE = 2
+		PAUSE = 2,
+		PROFILE = 3
 	};
 
 	//function declarations
@@ -47,6 +49,7 @@ namespace VisualDebugger
 	bool key_state[MAX_KEYS];
 	bool hud_show = true;
 	HUD hud;
+	SZ_ChronoTimer timerFPS, timerRender, timerSceneUpdate;
 
 	//Init the debugger
 	void Init(const char *window_name, int width, int height)
@@ -101,7 +104,7 @@ namespace VisualDebugger
 		hud.AddLine(HELP, "    F12 - reset");
 		hud.AddLine(HELP, "");
 		hud.AddLine(HELP, " Display");
-		hud.AddLine(HELP, "    F5 - help on/off");
+		hud.AddLine(HELP, "    F5 - Display Performance");
 		hud.AddLine(HELP, "    F6 - shadows on/off");
 		hud.AddLine(HELP, "    F7 - render mode");
 		hud.AddLine(HELP, "");
@@ -112,11 +115,16 @@ namespace VisualDebugger
 		hud.AddLine(HELP, "");
 		hud.AddLine(HELP, " Force (applied to the selected actor)");
 		hud.AddLine(HELP, "    I,K,J,L,U,M - forward,backward,left,right,up,down");
+		hud.AddLine(HELP, "");
+
 		//add a pause screen
 		hud.AddLine(PAUSE, "");
 		hud.AddLine(PAUSE, "");
 		hud.AddLine(PAUSE, "");
 		hud.AddLine(PAUSE, "   Simulation paused. Press F10 to continue.");
+		hud.AddLine(PROFILE, " Medievil Rugby Game Performance");
+		hud.AddLine(PROFILE, "");
+		hud.AddLine(PROFILE, "    Average FPS: ");
 		//set font size for all screens
 		hud.FontSize(0.018f);
 		//set font color for all screens
@@ -130,24 +138,56 @@ namespace VisualDebugger
 	}
 
 	signed int frame = 0;
-	float timer = 0.0f;
 	float avgFPS = 0.0f;
+	float sceneUpdateTime = 0;
+	string stringFPS = "    Average FPS: ";
+	string avgRenderUpdate = "    Average Render Update Time: ";
+	string avgSceneUpdate =  "    Average Scene Update Time: ";
+	string dynamicActorCount = "    Number of Dynamic Actors: ";
+
+	// Clears and Rewrites the FPS
+	void RefreshProfileHUD()
+	{
+		hud.Clear(PROFILE);
+		hud.AddLine(PROFILE, " Medievil Rugby Game Performance");
+
+		hud.AddLine(PROFILE, stringFPS);
+
+		hud.AddLine(PROFILE, avgRenderUpdate);
+
+		hud.AddLine(PROFILE, avgSceneUpdate);
+
+		dynamicActorCount = "    Number of Dynamic Actors: " + std::to_string(PhysicsEngine::DynamicActor::dynamicCount);
+		hud.AddLine(PROFILE, dynamicActorCount);
+	}
+
+	// Calculates Average FPS + Render Loop Time
+	void UpdatePerformanceStats()
+	{
+		frame++;
+		if (timerFPS.getChronoTime() >= 1000.0f)
+		{
+			avgFPS = frame;
+			frame = 0;
+
+			stringFPS = "    Average FPS: " + std::to_string(avgFPS);
+			timerFPS.resetChronoTimer();
+		}
+
+		avgRenderUpdate = "    Average Render Time: " + std::to_string(timerRender.getChronoTime()) + " [ms]";
+		timerRender.resetChronoTimer();
+
+		avgSceneUpdate = "    Average Scene Update Time: " + std::to_string(timerSceneUpdate.getChronoTime()) + " [ms]";
+	}
 
 	//Render the scene and perform a single simulation step
 	void RenderScene()
 	{
-		frame++;
-		timer += delta_time;
-		if (timer >= 1.0f)
-		{
-			avgFPS = (float)frame / timer;
-			printf("\rAverage FPS: %f \n", avgFPS);
-		}
-
-		//handle pressed keys
+	
+		// handle pressed keys
 		KeyHold();
 
-		//start rendering
+		// start rendering
 		Renderer::Start(camera->getEye(), camera->getDir());
 
 		if ((render_mode == DEBUG) || (render_mode == BOTH))
@@ -162,7 +202,7 @@ namespace VisualDebugger
 				Renderer::Render(&actors[0], (PxU32)actors.size());
 		}
 
-		//adjust the HUD state
+		// adjust the HUD state
 		if (hud_show)
 		{
 			if (scene->Pause())
@@ -171,16 +211,23 @@ namespace VisualDebugger
 				hud.ActiveScreen(HELP);
 		}
 		else
-			hud.ActiveScreen(EMPTY);
+			hud.ActiveScreen(PROFILE);
 
-		//render HUD
+		// render HUD
 		hud.Render();
 
-		//finish rendering
+		// finish rendering
 		Renderer::Finish();
 
-		//perform a single simulation step
+		timerSceneUpdate.resetChronoTimer();
+		// perform a single simulation step
 		scene->Update(delta_time);
+		sceneUpdateTime = timerSceneUpdate.getChronoTime();
+
+		// Work out AVG FPS
+		UpdatePerformanceStats();
+		// Clear and Rewrite the HUD
+		RefreshProfileHUD();
 
 		camera->SetFollowTarget(((PxRigidBody*)scene->player->Get()));
 
@@ -235,6 +282,16 @@ namespace VisualDebugger
 			default:
 				break;
 			}
+		}
+
+		switch (toupper(key))
+		{
+		case '1':
+			scene->SpawnBalls(1);
+			break;
+		case '2':
+			scene->SpawnBalls(100);
+			break;
 		}
 	}
 

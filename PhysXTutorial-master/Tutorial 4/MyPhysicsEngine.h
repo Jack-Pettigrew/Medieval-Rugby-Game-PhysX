@@ -246,14 +246,15 @@ namespace PhysicsEngine
 		Wall* wall[6], *wall2;
 		Castle* castle;
 		Cloth* cloth[4];
+		std::vector<Ball*> spawnBalls;
 
 		// Timer Instance
-		SZ_ChronoTimer chronoBall, chronoRestart, profileMonitor;
+		SZ_ChronoTimer chronoRestart;
 
 		// Simulation Callback
 		MySimulationEventCallback* my_callback;
 
-		const float BALL_TIMER_CONST = 400000, RESTART_TIMER_CONST = 100000;
+		const float BALL_TIMER_CONST = 10.0f, RESTART_TIMER_CONST = 3000.0f;
 		float ballTimer = BALL_TIMER_CONST, restartTimer = RESTART_TIMER_CONST;
 
 	public:
@@ -631,8 +632,7 @@ namespace PhysicsEngine
 			// Timer Checking
 			if (kickTime)
 			{
-				chronoBall.resetChronoTimer();
-				ballTimer -= chronoBall.getChronoTime();
+				ballTimer -= dt;
 			}
 
 
@@ -663,20 +663,23 @@ namespace PhysicsEngine
 			if (my_callback->scoreTrigger)
 				GoalTrigger();
 
+			if(!my_callback->restart)
+				chronoRestart.resetChronoTimer();
+
 			if (my_callback->restart && playerController != PlayerController::trebuchetControls)
 			{
 				player->done = true;
-				chronoRestart.resetChronoTimer();
-				restartTimer -= chronoRestart.getChronoTime();
+				restartTimer -= chronoRestart.getChronoTime() * dt;
 				
 				if (restartTimer <= 0.0f)
 				{
 					restartTimer = RESTART_TIMER_CONST;
+					PhysicsEngine::DynamicActor::dynamicCount = 0;
 					this->Reset();
 				}
 			}
 
-			///printf("Reset Timer: %f \n", restartTimer);
+			//printf("Reset Timer: %f \n", restartTimer);
 		}
 
 		// Switch to Trebuchet Controls
@@ -738,6 +741,22 @@ namespace PhysicsEngine
 				box->Color(PxVec3(0.7f, 0.7f, 0.2f));
 				Add(box);
 
+			}
+		}
+
+		// Spawn Number of Balls Specified
+		void SpawnBalls(int numberofBalls)
+		{
+			for (int i = 0; i < numberofBalls; i++)
+			{
+				Ball* ball = new Ball(PxTransform(((PxRigidBody*)player->Get())->getGlobalPose().p + PxVec3(0.0f, 20.0f, -50.0f)));
+				ball->Color(color_palette[2]);
+				ball->Name("Ball" + i);
+				PxMaterial* ballMaterial = GetPhysics()->createMaterial(0.2f, 0.5f, 1.25f);
+				ball->Material(ballMaterial);
+				Add(ball);
+
+				spawnBalls.push_back(ball);
 			}
 		}
 
