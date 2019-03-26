@@ -602,13 +602,13 @@ namespace PhysicsEngine
 		SZ_ChronoTimer arrowTimer;
 
 		// Arrow Object
-		Arrow* arrow;
 		float arrowSpeed = 75.0f;
 
 		// Player Object
 		Player* player;
 
 	public:
+		Arrow* arrow;
 
 		Towers(const PxTransform& pose = PxTransform(PxIdentity), PxReal density = PxReal(5.0f))
 			: DynamicActor(pose)
@@ -622,6 +622,7 @@ namespace PhysicsEngine
 
 			// Arrow Init
 			arrow = new Arrow(PxTransform(pose.p + PxVec3(0.0f, 6.0f, 0.0f)));
+			arrow->Name("Arrow");
 		}
 		
 		// Update Method

@@ -47,7 +47,9 @@ namespace PhysicsEngine
 		{
 			ACTOR0 = (1 << 0),
 			ACTOR1 = (1 << 1),
-			ACTOR2 = (1 << 2)
+			ACTOR2 = (1 << 2),
+			PLAYER = (1 << 3),
+			ARROW = (1 << 4)
 			//add more if you need
 		};
 	};
@@ -96,9 +98,9 @@ namespace PhysicsEngine
 	public:
 
 		//an example variable that will be checked in the main simulation loop
-		bool trigger, playerTrigger, scoreTrigger, restart;
+		bool trigger, playerTrigger, scoreTrigger, restart, playerHit;
 
-		MySimulationEventCallback() : trigger(false), playerTrigger(false), scoreTrigger(false), restart(false) {}
+		MySimulationEventCallback() : trigger(false), playerTrigger(false), scoreTrigger(false), restart(false), playerHit(false) {}
 
 		///Method called when the contact with the trigger object is detected.
 		virtual void onTrigger(PxTriggerPair* pairs, PxU32 count)
@@ -176,6 +178,8 @@ namespace PhysicsEngine
 		{
 			cerr << "Contact found between " << pairHeader.actors[0]->getName() << " " << pairHeader.actors[1]->getName() << endl;
 
+			playerHit = true;
+
 			//check all pairs
 			for (PxU32 i = 0; i < nbPairs; i++)
 			{
@@ -189,7 +193,9 @@ namespace PhysicsEngine
 				{
 					cerr << "onContact::eNOTIFY_TOUCH_LOST" << endl;
 				}
+
 			}
+
 		}
 
 		virtual void onConstraintBreak(PxConstraintInfo *constraints, PxU32 count) {}
@@ -216,6 +222,7 @@ namespace PhysicsEngine
 
 		//customise collision filtering here
 		//e.g.
+
 
 		// trigger the contact callback for pairs (A,B) where 
 		// the filtermask of A contains the ID of B and vice versa.
@@ -281,7 +288,7 @@ namespace PhysicsEngine
 
 		///specify your custom filter shader here
 		///PxDefaultSimulationFilterShader by default
-		MyScene() : Scene() {};
+		MyScene() : Scene(CustomFilterShader) {};
 
 		// Debug Visulisation Setup
 		void SetVisualisation()
@@ -358,6 +365,7 @@ namespace PhysicsEngine
 			player->Name("Player");
 			player->Color(PxVec3(200.0f / 255.f, 50.0f / 255.f, 200.0f / 255.f));
 			player->SetBallTarget(((PxRigidBody*)ball->Get()));
+			player->SetupFiltering(FilterGroup::PLAYER, FilterGroup::ARROW);
 			Add(player);
 
 
@@ -531,6 +539,7 @@ namespace PhysicsEngine
 				tower[i]->Enabled(true);
 				tower[i]->getArrow()->Name("Arrow");
 				tower[i]->SetKinematic(true);
+				tower[i]->arrow->SetupFiltering(FilterGroup::ARROW, FilterGroup::PLAYER);
 				Add(tower[i]);
 				Add(tower[i]->getArrow());
 
@@ -658,6 +667,9 @@ namespace PhysicsEngine
 			}
 
 			// Collision Triggers
+
+			if (my_callback->playerHit)
+				SpawnPlayerBlood();
 
 			if (my_callback->playerTrigger)
 			{
@@ -817,6 +829,21 @@ namespace PhysicsEngine
 				Add(cloth);
 
 				clothCount++;
+			}
+		}
+
+		// Spawns blood at point of collision between Player and Arrow
+		void SpawnPlayerBlood()
+		{
+			my_callback->playerHit = false;
+			PxVec3 playerPos = ((PxRigidBody*)player->Get())->getGlobalPose().p;
+
+			for (int i = 0; i < 3; i++)
+			{
+				Box* bloodBox = new Box(PxTransform(playerPos + PxVec3(0.0f, 0.5f, 0.25f)), PxVec3(0.25f, 0.25f, 0.25f), 0.01f);
+				bloodBox->Color(PxVec3(1.0f, 0.0f, 0.0f));
+				Add(bloodBox);
+
 			}
 		}
 
