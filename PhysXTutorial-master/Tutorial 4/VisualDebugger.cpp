@@ -1,4 +1,5 @@
 
+
 #include "VisualDebugger.h"
 #include <vector>
 #include "Extras\Camera.h"
@@ -135,9 +136,9 @@ namespace VisualDebugger
 		glutMainLoop();
 	}
 
-	signed int frame = 0;
-	int avgFPS = 0.0f;
-	int sceneUpdateTime = 0;
+	float frame = 0.0f;
+	float avgFPS = 0.0f;
+	float sceneUpdateTime = 0.0f;
 	string stringFPS = "    Average FPS: ";
 	string avgRenderUpdate = "    Average Render Update Time: ";
 	string avgSceneUpdate =  "    Average Scene Update Time: ";
@@ -149,6 +150,13 @@ namespace VisualDebugger
 	{
 		hud.Clear(PROFILE);
 		hud.AddLine(PROFILE, " Medievil Rugby Game Performance");
+
+		if(scene->testCase)
+			hud.AddLine(PROFILE, "    Test Case: Enabled");
+		else
+			hud.AddLine(PROFILE, "    Test Case: Disabled");
+
+		hud.AddLine(PROFILE, "");
 		hud.AddLine(PROFILE, stringFPS);
 		hud.AddLine(PROFILE, avgRenderUpdate);
 		hud.AddLine(PROFILE, avgSceneUpdate);
@@ -157,7 +165,7 @@ namespace VisualDebugger
 		hud.AddLine(PROFILE, " Objects Stats:");
 		dynamicActorCount = "    # of Dynamic Actors: " + std::to_string(PhysicsEngine::DynamicActor::dynamicCount);
 		hud.AddLine(PROFILE, dynamicActorCount);
-		dynamicActorCount = "    # of Cloth: " + std::to_string(scene->clothCount);
+		sceneClothCount = "    # of Cloth: " + std::to_string(scene->clothCount);
 		hud.AddLine(PROFILE, sceneClothCount);
 		hud.AddLine(PROFILE, "");
 
@@ -174,7 +182,7 @@ namespace VisualDebugger
 		frame++;
 		if (timerFPS.getChronoTime() >= 1000.0f)
 		{
-			avgFPS = frame;
+			avgFPS = ((float)frame / timerFPS.getChronoTime()) * 1000;
 			frame = 0;
 			
 			stringFPS = "    Average FPS: " + std::to_string(avgFPS);
@@ -184,7 +192,7 @@ namespace VisualDebugger
 		avgRenderUpdate = "    Average Render Time: " + std::to_string(timerRender.getChronoTime()) + " [ms]";
 		timerRender.resetChronoTimer();
 
-		avgSceneUpdate = "    Average Scene Update Time: " + std::to_string(timerSceneUpdate.getChronoTime()) + " [ms]";
+		avgSceneUpdate = "    Average Scene Update Time: " + std::to_string(sceneUpdateTime) + " [ms]";
 	}
 
 	//Render the scene and perform a single simulation step
@@ -307,6 +315,9 @@ namespace VisualDebugger
 			break;
 		case '5':
 			scene->SpawnCloth(1);
+			break;
+		case 'T':
+			scene->testCase = !scene->testCase;
 			break;
 		}
 	}

@@ -486,13 +486,13 @@ namespace PhysicsEngine
 	class Bleachers : public DynamicActor
 	{
 	public:
-		Bleachers(const PxTransform& pose = PxTransform(PxIdentity), PxReal density = 100.0f)
+		Bleachers(bool single, const PxTransform& pose = PxTransform(PxIdentity), PxReal density = 100.0f)
 			: DynamicActor(pose)
 		{
-			Init(density);
+			Init(density, single);
 		}
 
-		void Init(PxReal density)
+		void Init(PxReal density, bool single)
 		{
 			// Right
 			CreateShape(PxBoxGeometry(PxVec3(6.0f, 2.0f, 400.0f)), density);
@@ -512,6 +512,9 @@ namespace PhysicsEngine
 
 			CreateShape(PxBoxGeometry(PxVec3(0.5f, 4.0f, 400.0f)), density);
 			GetShape(5)->setLocalPose(PxTransform(PxVec3(94.0f, 0.0f, 0.0f)));
+
+			if (single)
+				return;
 
 			// Left
 			CreateShape(PxBoxGeometry(PxVec3(6.0f, 2.0f, 400.0f)), density);

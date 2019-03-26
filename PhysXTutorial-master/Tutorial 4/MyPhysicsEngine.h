@@ -4,7 +4,8 @@
 #include "SZ_ChronoTimer.h"
 #include <iostream>
 #include <iomanip>
-#include <time.h>
+#include <ctime>
+#include <cstdlib>
 
 namespace PhysicsEngine
 {
@@ -49,7 +50,7 @@ namespace PhysicsEngine
 			ACTOR1 = (1 << 1),
 			ACTOR2 = (1 << 2),
 			PLAYER = (1 << 3),
-			ARROW = (1 << 4)
+			WEAPON = (1 << 4)
 			//add more if you need
 		};
 	};
@@ -61,11 +62,11 @@ namespace PhysicsEngine
 		Box *bottom, *top;
 
 	public:
-		Trampoline(const PxVec3& dimensions = PxVec3(1.f, 1.f, 1.f), PxReal stiffness = 1.f, PxReal damping = 1.f)
+		Trampoline(const PxTransform& pos, const PxVec3& dimensions = PxVec3(1.f, 1.f, 1.f), PxReal stiffness = 1.f, PxReal damping = 1.f)
 		{
 			PxReal thickness = .1f;
-			bottom = new Box(PxTransform(PxVec3(0.f, thickness, 0.f)), PxVec3(dimensions.x, thickness, dimensions.z));
-			top = new Box(PxTransform(PxVec3(0.f, dimensions.y + thickness, 0.f)), PxVec3(dimensions.x, thickness, dimensions.z));
+			bottom = new Box(PxTransform(PxVec3(pos.p.x, thickness, pos.p.z)), PxVec3(dimensions.x, thickness, dimensions.z));
+			top = new Box(PxTransform(PxVec3(pos.p.x, dimensions.y + thickness, pos.p.z)), PxVec3(dimensions.x, thickness, dimensions.z));
 			springs.resize(4);
 			springs[0] = new DistanceJoint(bottom, PxTransform(PxVec3(dimensions.x, thickness, dimensions.z)), top, PxTransform(PxVec3(dimensions.x, -dimensions.y, dimensions.z)));
 			springs[1] = new DistanceJoint(bottom, PxTransform(PxVec3(dimensions.x, thickness, -dimensions.z)), top, PxTransform(PxVec3(dimensions.x, -dimensions.y, -dimensions.z)));
@@ -178,6 +179,7 @@ namespace PhysicsEngine
 		{
 			cerr << "Contact found between " << pairHeader.actors[0]->getName() << " " << pairHeader.actors[1]->getName() << endl;
 
+			// Set Player 
 			playerHit = true;
 
 			//check all pairs
@@ -248,13 +250,14 @@ namespace PhysicsEngine
 		Box* handle[4];
 		Sphere* weaponHead[4];
 		Goal* goal;
-		Box* trebuchetTrigger, *scoreTrigger;
-		Bleachers* bleachers;
+		Box* trebuchetTrigger, *scoreTrigger, *flagPole;
+		Bleachers* bleachers, * bleachersBehind;
 		RotatingObstacle* rotatingObstacle[8];
 		Box* obstacleStands[8];
 		Wall* wall[6], *wall2;
 		Castle* castle;
 		std::vector<Ball*> spawnBalls;
+		Trampoline* tramopline;
 
 		// Timer Instance
 		SZ_ChronoTimer chronoRestart;
@@ -267,7 +270,7 @@ namespace PhysicsEngine
 
 	public:
 
-		int clothCount = 0;
+		int clothCount;
 		enum PlayerController { playerControls, trebuchetControls };
 
 		// Public Game Objects
@@ -277,12 +280,13 @@ namespace PhysicsEngine
 		TrebuchetBase* trebuchetBase;
 		TrebuchetArm* trebuchetArm;
 		RevoluteJoint* weaponJoint[4], *trebuchetJoint, *obstacleJoint[8];
-		Cloth* cloth[4];
+		Cloth* cloth[4], *flag;
 		Towers* tower[2];
 
 		// Player Controls Modifier
 		PlayerController playerController;
 
+		bool testCase = false;
 		bool kickTime = false;
 		bool pressed = false;
 
@@ -335,11 +339,16 @@ namespace PhysicsEngine
 			Add(scoreTrigger);
 
 			// Bleachers
-			bleachers = new Bleachers(PxTransform(PxVec3(0.0f, 1.0f, -200.0f)));
+			bleachers = new Bleachers(false, PxTransform(PxVec3(0.0f, 1.0f, -200.0f)));
 			bleachers->Color(PxVec3(50.0f / 255.0f, 50.0f / 255.0f, 50.0f / 255.0f));
 			bleachers->Name("Right Bleachers");
 			bleachers->SetKinematic(true);
 			Add(bleachers);
+
+			bleachersBehind = new Bleachers(true, PxTransform(PxVec3(0.0f, 1.0f, 75.0f), PxQuat(3 * (PxPi / 2), PxVec3(0.0f, 1.0f, 0.0f))));
+			bleachers->Color(PxVec3(50.0f / 255.0f, 50.0f / 255.0f, 50.0f / 255.0f));
+			bleachersBehind->SetKinematic(true);
+			Add(bleachersBehind);
 
 			// Ball Setup
 			ball = new Ball(PxTransform(PxVec3(-4.0f, 5.0f, -2.0f)), 1.0f);
@@ -361,11 +370,11 @@ namespace PhysicsEngine
 			// Player
 			playerController = playerControls;
 
-			player = new Player(PxTransform(PxVec3(-5.0f, 0.5f, -300.0f))); //125.0f
+			player = new Player(PxTransform(PxVec3(-5.0f, 0.5f, -350.0f))); //125.0f
 			player->Name("Player");
 			player->Color(PxVec3(200.0f / 255.f, 50.0f / 255.f, 200.0f / 255.f));
 			player->SetBallTarget(((PxRigidBody*)ball->Get()));
-			player->SetupFiltering(FilterGroup::PLAYER, FilterGroup::ARROW);
+			player->SetupFiltering(FilterGroup::PLAYER, FilterGroup::WEAPON);
 			Add(player);
 
 
@@ -418,7 +427,9 @@ namespace PhysicsEngine
 				weaponHead[i]->Name("Head");
 				weaponHead[i]->Material(CreateMaterial(0.5f, 0.5f, 2.0f));
 				weaponHead[i]->CreateShape(PxSphereGeometry(1.0f), 0.0001f);
+				weaponHead[i]->SetupFiltering(FilterGroup::WEAPON, FilterGroup::PLAYER);
 				Add(weaponHead[i]);
+
 
 				/// Joint
 				weaponJoint[i] = new RevoluteJoint(handle[i], PxTransform(PxVec3(0.0f, 1.0f, 0.0f), PxQuat(PxReal(PxPi / 2), PxVec3(0.0f, 0.0f, 1.0f))), weaponHead[i], PxTransform(PxVec3(0.0f, 1.0f, 4.0f)));
@@ -488,7 +499,7 @@ namespace PhysicsEngine
 
 				obstacleJoint[i] = new RevoluteJoint(obstacleStands[i], PxTransform(PxVec3(0.0f, 2.0f, 0.0f), PxQuat(PxReal(PxPi / 2), PxVec3(0.0f, 0.0f, 1.0f))), rotatingObstacle[i], PxTransform(PxVec3(0.0f, 0.0f, 0.0f)));
 
-				obstacleJoint[i]->DriveVelocity(1.0f);
+				obstacleJoint[i]->DriveVelocity(2.0f);
 
 				obstacleOffset.x += 30.0f;
 
@@ -539,11 +550,30 @@ namespace PhysicsEngine
 				tower[i]->Enabled(true);
 				tower[i]->getArrow()->Name("Arrow");
 				tower[i]->SetKinematic(true);
-				tower[i]->arrow->SetupFiltering(FilterGroup::ARROW, FilterGroup::PLAYER);
+				tower[i]->arrow->SetupFiltering(FilterGroup::WEAPON, FilterGroup::PLAYER);
 				Add(tower[i]);
 				Add(tower[i]->getArrow());
 
 				temp = tower2;
+			}
+
+			// Trampoline
+			tramopline = new Trampoline(PxTransform(PxVec3(0.0f, 0.5f, -350.0f)), PxVec3(2.0f, 3.0f, 3.0f), 100.0f, 1.0f);
+			tramopline->AddToScene(this);
+
+			PxVec3 endChaserPos = { -80.0f, 0.5f, -325.0f };
+			srand(time(0));
+			for (int i = 0; i < 35; i++)
+			{
+				float z = (rand() % -25) + -325;
+
+				Enemy* endChaser = new Chaser(PxTransform(PxVec3(endChaserPos.x, endChaserPos.y, z)), PxVec3(1.0f, 2.0f, 1.0f), 2.0f);
+				endChaser->Name("End Chaser" + i);
+				endChaser->Color(PxVec3(1.0f, 0.0f, 0.0f));
+				Add(endChaser);
+
+				endChaserPos.x += 5.0f;
+
 			}
 
 #pragma endregion
@@ -555,31 +585,31 @@ namespace PhysicsEngine
 			Add(castle);
 
 			// Destructables
-			int x = rand() % 275 + -275;
-			int z = rand() % -25 + -350.0f;
-			PxVec3 pillarPos = { (float)x, 1.0f, (float)z };
+			//int x = rand() % 275 + -275;
+			//int z = rand() % -25 + -350.0f;
+			//PxVec3 pillarPos = { (float)x, 1.0f, (float)z };
 
-			/// Destructable Pillars
-			int index = 0;
-			for (int i = 0; i < 8; i++)
-			{
-				if (index > 12)
-					break;
-
-				if (i == 7)
-				{
-					x = rand() % 100 + -75;
-					z = rand() % -25 + -350.0f;
-					pillarPos = { (float)x, 1.0f, (float)z };
-					i = 0;
-					index++;
-				}
-
-				Box *pillar = new Box(PxTransform(pillarPos), PxVec3(1.0f, 1.0f, 1.0f), 5.0f);
-				Add(pillar);
-
-				pillarPos.y += 2.0f;
-			}
+			///// Destructable Pillars
+			//int index = 0;
+			//for (int i = 0; i < 8; i++)
+			//{
+			//	if (index > 12)
+			//		break;
+			//
+			//	if (i == 7)
+			//	{
+			//		x = rand() % 100 + -75;
+			//		z = rand() % -25 + -350.0f;
+			//		pillarPos = { (float)x, 1.0f, (float)z };
+			//		i = 0;
+			//		index++;
+			//	}
+			//
+			//	Box *pillar = new Box(PxTransform(pillarPos), PxVec3(1.0f, 1.0f, 1.0f), 5.0f);
+			//	Add(pillar);
+			//
+			//	pillarPos.y += 2.0f;
+			//}
 
 			// Cloth
 
@@ -591,6 +621,7 @@ namespace PhysicsEngine
 			PxVec3 clothOffset = { 25.0f, 49.0f, -397.0f };
 			for (int i = 0; i < 4; i++)
 			{
+				clothCount++;
 
 				cloth[i] = new Cloth(PxTransform(clothOffset), PxVec2(25.0f, 45.0f), PxU32(10), PxU32(10), true);
 				((PxCloth*)cloth[i]->Get())->setClothFlags(PxClothFlag::eGPU | PxClothFlag::eSCENE_COLLISION | PxClothFlag::eSWEPT_CONTACT);		// Swept = Computationally Expensive
@@ -609,8 +640,22 @@ namespace PhysicsEngine
 
 				clothOffset.x += 35.0f;
 
-				clothCount++;
 			}
+
+			// Flags
+			flag = new Cloth(PxTransform(PxVec3(0.0f, 75.0f, -402.0f), PxQuat(3 * (PxPi / 2), PxVec3(0.0f, 0.0f, 1.0f))), PxVec2(15.0f, 25.0f), PxU32(10), PxU32(10), true);
+			flag->Name("Flag");
+			((PxCloth*)flag->Get())->setExternalAcceleration(PxVec3(8.0f, 1.0f, 2.5f));
+			flag->Color(PxVec3(175.0f / 255.0f, 50.0f / 255.0f, 175.0f / 255.0f));
+			Add(flag);
+
+			flagPole = new Box(PxTransform(PxVec3(0.0f, 63.0f, -402.0f)), PxVec3(1.0f, 12.0f, 1.0f));
+			flagPole->Color(PxVec3(1.0f, 0.2f, 0.8f));
+			flagPole->SetKinematic(true);
+			flagPole->Name("Flag Pole");
+			Add(flagPole);
+
+
 		}
 
 		// Custom update function
@@ -678,7 +723,7 @@ namespace PhysicsEngine
 			}
 
 			if (my_callback->scoreTrigger)
-				GoalTrigger();
+				GoalTrigger(testCase);
 
 			if(!my_callback->restart)
 				chronoRestart.resetChronoTimer();
@@ -692,6 +737,7 @@ namespace PhysicsEngine
 				{
 					restartTimer = RESTART_TIMER_CONST;
 					PhysicsEngine::DynamicActor::dynamicCount = 0;
+					clothCount = 0;
 					this->Reset();
 				}
 			}
@@ -744,27 +790,30 @@ namespace PhysicsEngine
 
 
 		// Goal Score Reaction
-		void GoalTrigger()
+		void GoalTrigger(bool testCase)
 		{
 			my_callback->scoreTrigger = false;
 
 			int colorIndex = 0;
 			PxVec3 ballPositions = { 0.0f, 2.0f, -350.0f };
 
-			// Create Random Balls
-			for (int i = 0; i < 100; i++)
+			if (testCase)
 			{
-				Box* box = new Box(PxTransform(ballPositions), PxVec3(1.0f, 1.0f, 1.0f), 100.0f);
-				box->Material(CreateMaterial(0.5f, 0.5f, 1.5f));
-				box->Name("Score Ball\n");
-				box->Color(scoreColors[colorIndex++]);
-				Add(box);
+				// Create Random Balls
+				for (int i = 0; i < 100; i++)
+				{
+					Box* box = new Box(PxTransform(ballPositions), PxVec3(1.0f, 1.0f, 1.0f), 100.0f);
+					box->Material(CreateMaterial(0.5f, 0.5f, 1.5f));
+					box->Name("Score Ball\n");
+					box->Color(scoreColors[colorIndex++]);
+					Add(box);
 
-				if (colorIndex > 3)
-					colorIndex = 0;
+					if (colorIndex > 3)
+						colorIndex = 0;
 
-				if(i % 25 == 0)
-					ballPositions.y += 10.0f;
+					if(i % 25 == 0)
+						ballPositions.y += 10.0f;
+				}
 			}
 
 			PxVec3 ballPositionsCastle = { -75.0f, 75.0f, -410.0f };
@@ -836,6 +885,7 @@ namespace PhysicsEngine
 		void SpawnPlayerBlood()
 		{
 			my_callback->playerHit = false;
+
 			PxVec3 playerPos = ((PxRigidBody*)player->Get())->getGlobalPose().p;
 
 			for (int i = 0; i < 3; i++)
