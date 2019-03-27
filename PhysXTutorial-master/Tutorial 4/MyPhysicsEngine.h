@@ -557,10 +557,6 @@ namespace PhysicsEngine
 				temp = tower2;
 			}
 
-			// Trampoline
-			tramopline = new Trampoline(PxTransform(PxVec3(0.0f, 0.5f, -350.0f)), PxVec3(2.0f, 3.0f, 3.0f), 100.0f, 1.0f);
-			tramopline->AddToScene(this);
-
 			PxVec3 endChaserPos = { -80.0f, 0.5f, -325.0f };
 			srand(time(0));
 			for (int i = 0; i < 35; i++)
@@ -583,33 +579,6 @@ namespace PhysicsEngine
 			castle = new Castle(PxTransform(PxVec3(0.0f, 0.5f, -400.0f)));
 			castle->SetKinematic(true);
 			Add(castle);
-
-			// Destructables
-			//int x = rand() % 275 + -275;
-			//int z = rand() % -25 + -350.0f;
-			//PxVec3 pillarPos = { (float)x, 1.0f, (float)z };
-
-			///// Destructable Pillars
-			//int index = 0;
-			//for (int i = 0; i < 8; i++)
-			//{
-			//	if (index > 12)
-			//		break;
-			//
-			//	if (i == 7)
-			//	{
-			//		x = rand() % 100 + -75;
-			//		z = rand() % -25 + -350.0f;
-			//		pillarPos = { (float)x, 1.0f, (float)z };
-			//		i = 0;
-			//		index++;
-			//	}
-			//
-			//	Box *pillar = new Box(PxTransform(pillarPos), PxVec3(1.0f, 1.0f, 1.0f), 5.0f);
-			//	Add(pillar);
-			//
-			//	pillarPos.y += 2.0f;
-			//}
 
 			// Cloth
 
