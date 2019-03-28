@@ -169,11 +169,20 @@ namespace VisualDebugger
 		hud.AddLine(PROFILE, sceneClothCount);
 		hud.AddLine(PROFILE, "");
 
-		hud.AddLine(PROFILE, " Controls:");
+		hud.AddLine(PROFILE, " Player Controls:");
+		hud.AddLine(PROFILE, "    Mouse + Hold: Rotate Camera");
+		hud.AddLine(PROFILE, "    WASD : Move");
+		hud.AddLine(PROFILE, "    F : Trebuchet Throw");
+		hud.AddLine(PROFILE, "");
+		hud.AddLine(PROFILE, " Debug Controls:");
+		hud.AddLine(PROFILE, "    T : Toggle Test Case on Goal Score");
+		hud.AddLine(PROFILE, "    P : Move Player to Trebuchet");
 		hud.AddLine(PROFILE, "    1 : Spawn 1 Ball");
 		hud.AddLine(PROFILE, "    2 : Spawn 100 Balls");
 		hud.AddLine(PROFILE, "    3 : Spawn 100 Balls in formation");
 		hud.AddLine(PROFILE, "    4 : Spawn 200 Balls");
+		hud.AddLine(PROFILE, "    5 : Spawn 1 Cloth (Low Vertice)");
+		hud.AddLine(PROFILE, "    6 : Spawn 20 Crowded Enemies");
 	}
 
 	// Calculates Average FPS + Render Loop Time
@@ -316,6 +325,9 @@ namespace VisualDebugger
 		case '5':
 			scene->SpawnCloth(1);
 			break;
+		case 'P':
+			scene->MovePlayerToTrebuchet();
+			break;
 		case 'T':
 			scene->testCase = !scene->testCase;
 			break;
@@ -435,6 +447,7 @@ namespace VisualDebugger
 			break;
 		case '6':
 			camera->MoveRight(delta_time);
+			scene->spawnEnemies = true;
 			break;
 		case 'Q':
 			camera->MoveUp(delta_time);

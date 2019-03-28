@@ -289,6 +289,7 @@ namespace PhysicsEngine
 		bool testCase = false;
 		bool kickTime = false;
 		bool pressed = false;
+		bool spawnEnemies = false;
 
 		///specify your custom filter shader here
 		///PxDefaultSimulationFilterShader by default
@@ -370,7 +371,7 @@ namespace PhysicsEngine
 			// Player
 			playerController = playerControls;
 
-			player = new Player(PxTransform(PxVec3(-5.0f, 0.5f, -350.0f))); //125.0f
+			player = new Player(PxTransform(PxVec3(-5.0f, 0.5f, 125.0f))); //125.0f
 			player->Name("Player");
 			player->Color(PxVec3(200.0f / 255.f, 50.0f / 255.f, 200.0f / 255.f));
 			player->SetBallTarget(((PxRigidBody*)ball->Get()));
@@ -499,7 +500,7 @@ namespace PhysicsEngine
 
 				obstacleJoint[i] = new RevoluteJoint(obstacleStands[i], PxTransform(PxVec3(0.0f, 2.0f, 0.0f), PxQuat(PxReal(PxPi / 2), PxVec3(0.0f, 0.0f, 1.0f))), rotatingObstacle[i], PxTransform(PxVec3(0.0f, 0.0f, 0.0f)));
 
-				obstacleJoint[i]->DriveVelocity(2.0f);
+				obstacleJoint[i]->DriveVelocity(1.80f);
 
 				obstacleOffset.x += 30.0f;
 
@@ -681,6 +682,8 @@ namespace PhysicsEngine
 			}
 
 			// Collision Triggers
+			if (spawnEnemies)
+				SpawnEnemies();
 
 			if (my_callback->playerHit)
 				SpawnPlayerBlood();
@@ -837,8 +840,8 @@ namespace PhysicsEngine
 
 			for (int i = 0; i < numberofCloth; i++)
 			{
-				Cloth* cloth = new Cloth(PxTransform(((PxRigidBody*)player->Get())->getGlobalPose().p + pos), PxVec2(50.0f, 50.0f), PxU32(10), PxU32(10), false);
-				((PxCloth*)cloth->Get())->setClothFlags(PxClothFlag::eGPU | PxClothFlag::eSCENE_COLLISION);
+				Cloth* cloth = new Cloth(PxTransform(((PxRigidBody*)player->Get())->getGlobalPose().p + pos), PxVec2(50.0f, 50.0f), PxU32(5), PxU32(5), false);
+				((PxCloth*)cloth->Get())->setClothFlags(PxClothFlag::eSCENE_COLLISION);
 				((PxCloth*)cloth->Get())->setName("Test Cloth" + i);
 				cloth->Color(PxVec3(200.0f / 255.0f, 175.0f / 255.0f, 50.0f / 255.0f));
 				((PxCloth*)cloth->Get())->setExternalAcceleration(PxVec3(0.25f, 8.0f, -0.5f));
@@ -864,6 +867,28 @@ namespace PhysicsEngine
 				Add(bloodBox);
 
 			}
+		}
+
+		// Spawn Enemies
+		void SpawnEnemies()
+		{
+			spawnEnemies = false;
+
+			PxVec3 playerPos = ((PxRigidBody*)player->Get())->getGlobalPose().p;
+			
+			for (int i = 0; i < 20; i++)
+			{
+				Enemy* spawnedEnemy = new Chaser(PxTransform(playerPos + PxVec3(0.0f, 0.5f, -10.0f)), PxVec3(1.0f, 2.0f, 1.0f), 2.0f);
+				spawnedEnemy->Name("Spawned Chaser" + i);
+				spawnedEnemy->Color(PxVec3(1.0f, 0.0f, 1.0f));
+				Add(spawnedEnemy);
+			}
+		}
+
+		// Moves Player to the Trebuchet
+		void MovePlayerToTrebuchet()
+		{
+			((PxRigidBody*)player->Get())->setGlobalPose(PxTransform(PxVec3(0.0f, 0.5f, -225.0f)));
 		}
 
 		/// An example use of key release handling
